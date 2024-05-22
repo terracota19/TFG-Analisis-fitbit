@@ -5,6 +5,7 @@ class Mongo:
         self.client = MongoClient("mongodb://localhost:27017")
         self.db = self.client[dbname]
 
+    #CRUD Operations
     def insert_data(self, collection_name, data):
         collection = self.db[collection_name]
         result = collection.insert_one(data)
@@ -14,6 +15,7 @@ class Mongo:
         collection = self.db[collection_name]
         return collection.find(query)
 
+    
     def update_data(self, collection_name, query, new_values):
         collection = self.db[collection_name]
         result = collection.update_one(query, {"$set": new_values})
