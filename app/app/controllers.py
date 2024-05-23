@@ -6,23 +6,31 @@ class Controller:
         self.view = view
         self.model = Mongo("tfg_fitbit")
         self.logged_in_user = None
-    
-    def get_query_results(self):
-        query_results = self.model.find_data("usuarios", query={})
-        return query_results
+   
 
 
-    def register(self, user, password):
-        print("logica de registro")
-
-    def check_login(self, user, password):
-        user_data = self.model.find_data("usuarios", query={"usuario": user})
-        for document in user_data:
-            stored_hashed_password = document.get("password")
-            stored_salt = document.get("salt")
+    def register(self, user, password, edad):
+        if not (user and password and edad) : return False
+        else : 
+            hashed_password, salt = HashSHA_256.hash_password(password) 
+            user_data = {
+                "usuario": user,
+                "password": hashed_password,
+                "edad" : edad,
+                "salt" : salt
+            }
             
-            if HashSHA_256.verify_password(password, stored_hashed_password, stored_salt):
-                self.logged_in_user = document
-                print("Inicio de sesión exitoso")
-                return
-        print("Usuario no encontrado o contraseña incorrecta")
+            return self.model.insert_data("usuarios", user_data)
+
+       
+    #print(f"User: {user_data['usuario']}, Password: {user_data['password']}") 
+    def check_login(self, user, password):
+        user_data = self.model.find_one_data("usuarios", query={"usuario": user})
+        if user_data:
+            if HashSHA_256.verify_password(password, user_data["password"], user_data["salt"]):
+                self.logged_in_user = user
+                return True
+            else:
+                return False
+        else:
+            return False
