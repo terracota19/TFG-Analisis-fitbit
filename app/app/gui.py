@@ -54,7 +54,7 @@ class App(tk.Tk):
         self.after(2000, lambda: self.login_label.pack_forget())  #expresado en ms 2000 ms = 2s
     
     def register_Failed(self):
-        self.register_label = tk.Label(self.register_frame, text="Ups...! Registro fallido! (* -> Campos Obligatorios)", font=self.fontArial, fg="red")
+        self.register_label = tk.Label(self.register_frame, text="Ups...! Registro fallido! (* Campo Obligatorio)", font=self.fontArial, fg="red")
         self.register_label.pack(pady=5, padx=20, fill=tk.X)
         #TTL := TIME TO LIVE
         self.after(2000, lambda: self.register_label.pack_forget())  #expresado en ms 2000 ms = 2s
