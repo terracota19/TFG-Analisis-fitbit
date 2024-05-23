@@ -1,14 +1,14 @@
 from pymongo import MongoClient
 
 class Mongo:
-    def __init__(self, dbname):
-        self.client = MongoClient("mongodb://localhost:27017")
+    def __init__(self, dbname, mongoClient):
+        self.client = mongoClient
         self.db = self.client[dbname]
 
     def close_connection(self):
         self.client.close()
 
-    #CRUD Operations
+    # CRUD Operations
     def insert_data(self, collection_name, data):
         collection = self.db[collection_name]
         result = collection.insert_one(data)
@@ -19,8 +19,8 @@ class Mongo:
         return collection.find(query)
 
     def find_one_data(self, collection_name, query):
-             collection = self.db[collection_name]
-             return collection.find_one(query)
+        collection = self.db[collection_name]
+        return collection.find_one(query)
     
     def update_data(self, collection_name, query, new_values):
         collection = self.db[collection_name]
@@ -31,5 +31,3 @@ class Mongo:
         collection = self.db[collection_name]
         result = collection.delete_one(query)
         return result.deleted_count
-
-   
