@@ -1,5 +1,3 @@
-from pymongo import MongoClient
-
 class Mongo:
     def __init__(self, dbname, mongoClient):
         self.client = mongoClient
@@ -22,9 +20,9 @@ class Mongo:
         collection = self.db[collection_name]
         return collection.find_one(query)
     
-    def update_data(self, collection_name, query, new_values):
+    def update_data(self, collection_name, query, field, value):
         collection = self.db[collection_name]
-        result = collection.update_one(query, {"$set": new_values})
+        result = collection.update_one(query, {"$set": {field: value}})
         return result.modified_count
 
     def delete_data(self, collection_name, query):

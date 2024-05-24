@@ -1,6 +1,7 @@
 import pymongo
 from app.models.mongo import Mongo
 from app.utils.hash import HashSHA_256
+from datetime import datetime
 
 class Controller:
     def __init__(self, view):
@@ -8,6 +9,24 @@ class Controller:
         self.mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.model = Mongo("tfg_fitbit", self.mongo_client)
         self.logged_in_user = None
+
+
+    #(self, collection_name, query, field, value
+    def updateApi_lastUpdate(self):
+        hora_actual = datetime.now()
+        if self.logged_in_user:
+            user_id = self.logged_in_user.get("_id")
+            if user_id:
+                query = {"_id": user_id}
+                new_values = {"set": {"ult_act": hora_actual}}  
+                self.model.update_data("usuarios", query, "ult_act" , hora_actual)        
+                
+        return hora_actual
+
+
+    def last_update(self) :
+       if self.logged_in_user and "ult_act" in self.logged_in_user:
+            return self.logged_in_user["ult_act"]
 
     def user_info(self):
         if self.logged_in_user and "usuario" in self.logged_in_user:

@@ -3,13 +3,16 @@ from tkinter import ttk
 from tkinter import font as tkFont
 from app.controllers import Controller
 from assets.fonts.fonts import get_arial20
+from datetime import datetime as st
+import datetime
+import os
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
         self.title("HeartPred'it")
-        self.geometry("700x600")
+        self.geometry("800x600")
 
         self.fontArial = get_arial20()
 
@@ -30,6 +33,7 @@ class App(tk.Tk):
             texto_personalizado = f"¡Bienvenido, {user_info}!"
             self.label = tk.Label(frame, text=texto_personalizado, bg="#457EAC", fg="white", font=self.fontArial, height=2)
             self.label.pack(pady=5, padx=20, fill=tk.X)
+            self.createStatusFrame(frame)  
         else:
             print("No se pudo obtener la información del usuario")
 
@@ -40,7 +44,6 @@ class App(tk.Tk):
         self.login_label = tk.Label(self.login_frame, text="Inicio de Sesión", font=self.fontArial, fg="white", bg="#457EAC")
         self.login_label.pack(pady=5, padx=20, fill=tk.X)
     
-
         email_label = tk.Label(self.login_frame, text="Correo: (*)", pady=2, fg="white", bg="#457EAC", font=('arial', 14))
         email_label.pack(anchor='w', padx=20, pady=(20, 0))
 
@@ -70,7 +73,6 @@ class App(tk.Tk):
         self.after(2000, lambda: self.register_label.pack_forget())
 
     def on_login_click(self):
-
         email = self.email_entry.get()
         password = self.password_entry.get()
         if self.controller.check_login(email, password):
@@ -136,9 +138,14 @@ class App(tk.Tk):
         self.age_entry.pack(fill=tk.X, padx=20, pady=5)
 
         self.createRegisterButton(self.register_frame)
+        self.createPredictionButton(self.notebook)
 
     def createRegisterButton(self, frame):
         self.register_button = tk.Button(frame, text="Registrarse", fg="white", bg="#457EAC", command=self.on_register_submit)
+        self.register_button.pack(pady=20, padx=20)
+
+    def createPredictionButton(self,frame):
+        self.register_button = tk.Button(frame, text="Predecir", fg="white", bg="#457EAC", command=self.on_predict_submit)
         self.register_button.pack(pady=20, padx=20)
 
     def on_register_submit(self):
@@ -153,6 +160,47 @@ class App(tk.Tk):
             self.notebook.select(self.login_frame)
         else:
             self.registerFailed()
+
+    def on_predict_submit(self):
+        print("logica de prediccion, creacion de nuevo notebook")
+
+    def createStatusFrame(self, frame):
+        # Create a new frame for the status information
+        self.status_frame = tk.Frame(frame, bg="#457EAC")
+        self.status_frame.pack(pady=10, padx=20, fill=tk.X)
+
+        #image_path = os.path.abspath("assets/images/mi_pulsera.png")  
+        #print(image_path)
+        
+        self.color_circle = tk.Canvas(self.status_frame, width=50, height=50, bg="#457EAC", highlightthickness=0)
+        self.color_circle.grid(row=0, column=1, padx=10, pady=10)
+        self.circle = self.color_circle.create_oval(5, 5, 20, 20, fill="green")
+
+        ult_actualizacion = self.controller.last_update()
+        fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
+        texto_actualizacion_pulsera =f"Última actualización: {fecha_legible}"
+        self.update_label = tk.Label(self.status_frame, text= texto_actualizacion_pulsera, fg="white", bg="#457EAC", font=('arial', 12))
+        self.update_label.grid(row=0, column=0, padx=10, pady=10)
+
+    
+        self.update_button = tk.Button(self.status_frame, text="Actualizar", fg="white", bg="#457EAC", command=self.update_status)
+        self.update_button.grid(row=1, column=0, columnspan=3, pady=10, padx=10)
+
+    def textLastUpdateLabel(self):
+        ult_actualizacion = datetime.datetime.now()
+        fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
+        texto_actualizacion_pulsera =f"Última actualización: {fecha_legible}"
+        return texto_actualizacion_pulsera
+
+
+    def update_status(self):        
+        date = self.controller.updateApi_lastUpdate()
+        texto_last_update = self.textLastUpdateLabel()
+        self.update_label.config(text=texto_last_update)
+        #logica de llamada a la api
+        
+
+
 
 if __name__ == "__main__":
     app = App()
