@@ -1,0 +1,7 @@
+pip install pillow
+pip install pymongo
+pip install tkinter
+pip install matplotlib
+pip install requests
+pip install Flask
+pip install base64

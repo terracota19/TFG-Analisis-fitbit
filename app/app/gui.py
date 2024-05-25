@@ -1,11 +1,18 @@
 import tkinter as tk
+import datetime
+import os
+import matplotlib.pyplot as plt
+
+
 from tkinter import ttk
 from tkinter import font as tkFont
 from app.controllers import Controller
-from assets.fonts.fonts import get_arial20
 from datetime import datetime as st
-import datetime
-import os
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import threading
+import webbrowser
 
 class App(tk.Tk):
     def __init__(self):
@@ -14,10 +21,14 @@ class App(tk.Tk):
         self.title("HeartPred'it")
         self.geometry("800x600")
 
-        self.fontArial = get_arial20()
-
         self.controller = Controller(self)
+        
+        #Server
+        self.flask_thread = threading.Thread(target=self.controller)
+        self.flask_thread.daemon = True
+        self.flask_thread.start()
 
+    
         self.createLoginAuthFrame()
 
     def createLoginAuthFrame(self):
@@ -31,7 +42,7 @@ class App(tk.Tk):
         user_info = self.controller.user_info()
         if user_info:
             texto_personalizado = f"¡Bienvenido, {user_info}!"
-            self.label = tk.Label(frame, text=texto_personalizado, bg="#457EAC", fg="white", font=self.fontArial, height=2)
+            self.label = tk.Label(frame, text=texto_personalizado, bg="#457EAC", fg="white", font=("arial", 20), height=2)
             self.label.pack(pady=5, padx=20, fill=tk.X)
             self.createStatusFrame(frame)  
         else:
@@ -41,7 +52,7 @@ class App(tk.Tk):
         self.login_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.login_frame, text="Inicio de Sesión")
 
-        self.login_label = tk.Label(self.login_frame, text="Inicio de Sesión", font=self.fontArial, fg="white", bg="#457EAC")
+        self.login_label = tk.Label(self.login_frame, text="Inicio de Sesión", font=("arial", 20), fg="white", bg="#457EAC")
         self.login_label.pack(pady=5, padx=20, fill=tk.X)
     
         email_label = tk.Label(self.login_frame, text="Correo: (*)", pady=2, fg="white", bg="#457EAC", font=('arial', 14))
@@ -63,12 +74,12 @@ class App(tk.Tk):
         self.login_button.pack(pady=2, padx=2)
 
     def loginFailed(self):
-        self.login_label = tk.Label(self.login_frame, text="Ups...! Inicio de sesión fallido!", font=self.fontArial, fg="red")
+        self.login_label = tk.Label(self.login_frame, text="Ups...! Inicio de sesión fallido!", font=("arial", 20), fg="red")
         self.login_label.pack(pady=5, padx=20, fill=tk.X)
         self.after(2000, lambda: self.login_label.pack_forget())
 
     def registerFailed(self):
-        self.register_label = tk.Label(self.register_frame, text="Ups...! Registro fallido! (* Campo Obligatorio)", font=self.fontArial, fg="red")
+        self.register_label = tk.Label(self.register_frame, text="Ups...! Registro fallido! (* Campo Obligatorio)", font=("arial", 20), fg="red")
         self.register_label.pack(pady=5, padx=20, fill=tk.X)
         self.after(2000, lambda: self.register_label.pack_forget())
 
@@ -95,6 +106,8 @@ class App(tk.Tk):
         self.notebook.add(self.app_frame, text="HeartPred'it")
         self.createWelcomeLabel(self.app_frame)
 
+    
+
     def createNotebook(self):
         self.notebook = ttk.Notebook(self.login_auth_frame)
         self.notebook.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
@@ -110,7 +123,7 @@ class App(tk.Tk):
         self.register_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.register_frame, text="Registro")
 
-        register_label = tk.Label(self.register_frame, text="Registro", font=self.fontArial, fg="white", bg="#457EAC")
+        register_label = tk.Label(self.register_frame, text="Registro", font=("arial", 20), fg="white", bg="#457EAC")
         register_label.pack(pady=5, padx=20, fill=tk.X)
 
         user_label = tk.Label(self.register_frame, text="Usuario: (*)", pady=2, fg="white", bg="#457EAC", font=('arial', 14))
@@ -137,16 +150,45 @@ class App(tk.Tk):
         self.age_entry = tk.Entry(self.register_frame)
         self.age_entry.pack(fill=tk.X, padx=20, pady=5)
 
+
         self.createRegisterButton(self.register_frame)
-        self.createPredictionButton(self.notebook)
+        
+
+    def createStatusFrame(self, frame):
+        
+        self.status_frame = tk.Frame(frame, bg="#457EAC")
+        self.status_frame.pack(pady=10, padx=20, fill=tk.X)
+
+        self.color_circle = tk.Canvas(self.status_frame, width=50, height=50, bg="#457EAC", highlightthickness=0)
+        self.color_circle.grid(row=0, column=0)
+        self.circle = self.color_circle.create_oval(5, 5, 20, 20, fill="green")
+
+        ult_actualizacion = self.controller.last_update()
+        fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
+        texto_actualizacion_pulsera = f"Última actualización: {fecha_legible}"
+        self.update_label = tk.Label(self.status_frame, text=texto_actualizacion_pulsera, fg="white", bg="#457EAC", font=('arial', 14))
+        self.update_label.grid(row=0, column=1)
+
+        self.update_button = tk.Button(self.status_frame, width=10, height=1,text="Actualizar", fg="white", bg="#457EAC", command=self.update_status)
+        self.update_button.grid(row=1, column=1, columnspan=3)
+        self.createPredictionButton(self.status_frame)
 
     def createRegisterButton(self, frame):
-        self.register_button = tk.Button(frame, text="Registrarse", fg="white", bg="#457EAC", command=self.on_register_submit)
+
+        self.authorize_button = tk.Button(self.register_frame, text="Paso 1: Autorizar con Fitbit", command=self.controller.authorize_with_fitbit)
+        self.authorize_button.pack(padx=10,pady=10)
+
+
+        self.register_button = tk.Button(frame, text="Paso 2: Registrarse", fg="white", bg="#457EAC", command=self.on_register_submit)
         self.register_button.pack(pady=20, padx=20)
 
     def createPredictionButton(self,frame):
-        self.register_button = tk.Button(frame, text="Predecir", fg="white", bg="#457EAC", command=self.on_predict_submit)
-        self.register_button.pack(pady=20, padx=20)
+        self.register_button = tk.Button(frame,width=10, height=1, text="Predecir", fg="white", bg="#457EAC", command=self.on_predict_submit)
+        self.register_button.grid(row = 2, column= 1, pady=20, padx=20)
+
+        self.prediction_frame = None
+
+
 
     def on_register_submit(self):
         user = self.register_user_entry.get()
@@ -154,7 +196,12 @@ class App(tk.Tk):
         password = self.register_password_entry.get()
         age = self.age_entry.get()
 
-        if self.controller.register(user, email, password, age):
+        user_id = self.controller.fitbitAPI.user_id
+        access_token = self.controller.fitbitAPI.access_token
+        refresh_token = self.controller.fitbitAPI.refresh_token
+
+
+        if self.controller.register(user, email, password, age, user_id, access_token, refresh_token):
             register_tab_index = self.notebook.index(self.register_frame)
             self.notebook.forget(register_tab_index)
             self.notebook.select(self.login_frame)
@@ -162,29 +209,38 @@ class App(tk.Tk):
             self.registerFailed()
 
     def on_predict_submit(self):
-        print("logica de prediccion, creacion de nuevo notebook")
+        if self.prediction_frame is None:
+            self.createPredictionFrame()
+        self.notebook.select(self.prediction_frame)
 
-    def createStatusFrame(self, frame):
-        # Create a new frame for the status information
-        self.status_frame = tk.Frame(frame, bg="#457EAC")
-        self.status_frame.pack(pady=10, padx=20, fill=tk.X)
+    def createPredictionFrame(self):
+        self.prediction_frame = tk.Frame(self.notebook, bg="#457EAC")
+        self.notebook.add(self.prediction_frame, text="Predicción")
 
-        #image_path = os.path.abspath("assets/images/mi_pulsera.png")  
-        #print(image_path)
+        self.createPredictionInfo()
+
+        # Botón de actualización
+        self.update_prediction_button = tk.Button(self.prediction_frame, width=10, height=1, text="Actualizar", fg="white", bg="#457EAC", command=self.update_status)
+        self.update_prediction_button.grid(row=0, column=2, columnspan=3, pady=10)  
+
+
+    def createPredictionInfo(self):
+        # Datos de ejemplo para el gráfico
+        predicciones = [1, 2, 3, 4, 5]
+        datos_test = [10, 15, 7, 10, 5]
+
+        fig, ax = plt.subplots(figsize=(5, 4))  
+        ax.plot(predicciones, datos_test)
+
         
-        self.color_circle = tk.Canvas(self.status_frame, width=50, height=50, bg="#457EAC", highlightthickness=0)
-        self.color_circle.grid(row=0, column=1, padx=10, pady=10)
-        self.circle = self.color_circle.create_oval(5, 5, 20, 20, fill="green")
+        ax.set_xlabel('Minutos')
+        ax.set_ylabel('HeartRate')
+        canvas = FigureCanvasTkAgg(fig, master=self.prediction_frame)
+        canvas.draw()
+        canvas.get_tk_widget().place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-        ult_actualizacion = self.controller.last_update()
-        fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
-        texto_actualizacion_pulsera =f"Última actualización: {fecha_legible}"
-        self.update_label = tk.Label(self.status_frame, text= texto_actualizacion_pulsera, fg="white", bg="#457EAC", font=('arial', 12))
-        self.update_label.grid(row=0, column=0, padx=10, pady=10)
+      
 
-    
-        self.update_button = tk.Button(self.status_frame, text="Actualizar", fg="white", bg="#457EAC", command=self.update_status)
-        self.update_button.grid(row=1, column=0, columnspan=3, pady=10, padx=10)
 
     def textLastUpdateLabel(self):
         ult_actualizacion = datetime.datetime.now()
@@ -198,6 +254,7 @@ class App(tk.Tk):
         texto_last_update = self.textLastUpdateLabel()
         self.update_label.config(text=texto_last_update)
         #logica de llamada a la api
+        
         
 
 
