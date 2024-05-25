@@ -1,7 +1,9 @@
 pip install pillow
+pip install mongo
 pip install pymongo
-pip install tkinter
+pip install tk
 pip install matplotlib
 pip install requests
 pip install Flask
-pip install base64
+pip install pybase64
+pip install mongodbshell
