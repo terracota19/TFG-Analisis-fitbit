@@ -49,14 +49,15 @@ class OAuthServer:
             user_id = response_data['user_id']
             access_token = response_data['access_token']
             refresh_token = response_data['refresh_token']
+            expires_in = response_data["expires_in"]
          
             # Guardar la información en la base de datos
-            self.store_fitbit_user_info(user_id, access_token, refresh_token)
+            self.store_fitbit_user_info(user_id, access_token, refresh_token,expires_in)
         else:
             print(f"La solicitud falló con el código de estado {response.status_code}")
             
-    def store_fitbit_user_info(self, user_id, access_token, refresh_token):
-        self.fitbit_api.store_fitbit_user_info(user_id, access_token, refresh_token)
+    def store_fitbit_user_info(self, user_id, access_token, refresh_token,expires_in):
+        self.fitbit_api.store_fitbit_user_info(user_id, access_token, refresh_token,expires_in)
 
     def start_server(self):
         if not self.flask_thread or not self.flask_thread.is_alive():
@@ -75,10 +76,3 @@ class OAuthServer:
         except Exception as e:
             print(f"Error al detener el servidor: {e}")
 
-if __name__ == "__main__":
-    # Supongamos que ya tienes una instancia de FitbitAPI llamada 'fitbit_api'
-    fitbit_api = FitbitAPI(client_id='tu_client_id', client_secret='tu_client_secret', code_verifier='tu_code_verifier')
-
-    # Pasamos la instancia de FitbitAPI al inicializar OAuthServer
-    oauth_server = OAuthServer(fitbit_api)
-    oauth_server.start_server()

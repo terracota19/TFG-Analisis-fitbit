@@ -7,10 +7,14 @@ import threading
 import webbrowser
 from app.utils.mini_server import OAuthServer
 from app.models.Fitbit import FitbitAPI
+import os
 
 
 class Controller:
     def __init__(self, view):
+
+       
+        
         self.view = view
         self.mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.model = Mongo("tfg_fitbit", self.mongo_client)
@@ -31,7 +35,6 @@ class Controller:
         #para posteriomenre obtener el access token del cliente autorizado
         self.oauth_server = OAuthServer(self.fitbitAPI)
         self.oauth_server.start_server()
-
        
 
     #(self, collection_name, query, field, value
@@ -62,7 +65,7 @@ class Controller:
         else:
             return None
 
-    def register(self, user, email, password, edad, user_id, access_token, refresh_token):
+    def register(self, user, email, password, edad, user_id, access_token, refresh_token, expires_in):
         if not (user and email and password and edad):
             return False
         else:
@@ -78,14 +81,16 @@ class Controller:
                 "edad": edad,
                 "salt": salt,
                 "correo": email,
+                "ult_act" : datetime.now(),
                 "fitbit": {
                     "user_id": user_id,
                     "access_token": access_token,
-                    "refresh_token": refresh_token
+                    "refresh_token": refresh_token,
+                    "expires_in": expires_in
                 }
             }
            
-            print(user_data)
+            #encript data
  
         return self.model.insert_data("usuarios", user_data)
 

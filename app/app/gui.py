@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from tkinter import ttk
 from tkinter import font as tkFont
 from app.controllers import Controller
-from datetime import datetime as st
+from datetime import datetime 
+from datetime import timedelta
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -28,7 +29,10 @@ class App(tk.Tk):
         self.flask_thread.daemon = True
         self.flask_thread.start()
 
-    
+        self.current_date = datetime.now()
+        self.year = self.current_date.year
+        self.month = self.current_date.month
+
         self.createLoginAuthFrame()
 
     def createLoginAuthFrame(self):
@@ -87,6 +91,10 @@ class App(tk.Tk):
         email = self.email_entry.get()
         password = self.password_entry.get()
         if self.controller.check_login(email, password):
+             #check access_token
+            if self.controller.fitbitAPI.access_token_is_expired() :
+                self.controller.fitbitAPI.refresh_access_token() 
+
             for tab in self.notebook.tabs():
                 self.notebook.forget(tab)
             self.createAppNotebook()
@@ -159,9 +167,9 @@ class App(tk.Tk):
         self.status_frame = tk.Frame(frame, bg="#457EAC")
         self.status_frame.pack(pady=10, padx=20, fill=tk.X)
 
-        self.color_circle = tk.Canvas(self.status_frame, width=50, height=50, bg="#457EAC", highlightthickness=0)
-        self.color_circle.grid(row=0, column=0)
-        self.circle = self.color_circle.create_oval(5, 5, 20, 20, fill="green")
+        #self.color_circle = tk.Canvas(self.status_frame, width=50, height=50, bg="#457EAC", highlightthickness=0)
+        #self.color_circle.grid(row=0, column=0)
+        #self.circle = self.color_circle.create_oval(5, 5, 20, 20, fill="green")
 
         ult_actualizacion = self.controller.last_update()
         fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
@@ -199,9 +207,10 @@ class App(tk.Tk):
         user_id = self.controller.fitbitAPI.user_id
         access_token = self.controller.fitbitAPI.access_token
         refresh_token = self.controller.fitbitAPI.refresh_token
+        expires_in = self.controller.fitbitAPI.expires_at
 
 
-        if self.controller.register(user, email, password, age, user_id, access_token, refresh_token):
+        if self.controller.register(user, email, password, age, user_id, access_token, refresh_token,expires_in):
             register_tab_index = self.notebook.index(self.register_frame)
             self.notebook.forget(register_tab_index)
             self.notebook.select(self.login_frame)
@@ -243,22 +252,26 @@ class App(tk.Tk):
 
 
     def textLastUpdateLabel(self):
-        ult_actualizacion = datetime.datetime.now()
+        ult_actualizacion = datetime.now()
         fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
         texto_actualizacion_pulsera =f"Última actualización: {fecha_legible}"
+  
         return texto_actualizacion_pulsera
+    
+    def get_dates_in_month(self, year, month):
+        num_days = (datetime(year, month + 1, 1) - datetime(year, month, 1)).days
+        return [datetime(year, month, day).strftime("%Y-%m-%d") for day in range(1, num_days + 1)]
 
 
     def update_status(self):        
         date = self.controller.updateApi_lastUpdate()
         texto_last_update = self.textLastUpdateLabel()
         self.update_label.config(text=texto_last_update)
-        #logica de llamada a la api
+        #retrieve data from api
+        dates = self.get_dates_in_month(self.year, self.month)
+        self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+        #getHeartRateData(self, detail_level, start_time, end_time, dates)
+       
         
+   
         
-
-
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()

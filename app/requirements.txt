@@ -6,4 +6,4 @@ pip install matplotlib
 pip install requests
 pip install Flask
 pip install pybase64
-pip install mongodbshell
+
