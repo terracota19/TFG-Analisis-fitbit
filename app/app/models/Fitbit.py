@@ -19,6 +19,10 @@ class FitbitAPI:
         self.user_id = None
         self.expires_at = None  
 
+        self.year = datetime.now().year
+        self.month =  datetime.now().month
+        self.day =  datetime.now().day
+
         self.authentification_url = self.generate_authorization_url()
 
     def access_token_is_expired(self):
@@ -68,24 +72,16 @@ class FitbitAPI:
         return heart_rate_data
      
     def storeHeartRateData(self, heart_rate_data):
-        # Lista para almacenar los datos a escribir en el CSV
         csv_data = []
-
-        # Recorrer los datos de frecuencia cardíaca
         for data in heart_rate_data:
-            # Obtener la fecha
             date = data['activities-heart'][0]['dateTime']
-            # Obtener los registros de frecuencia cardíaca intradiarios
             intraday_data = data['activities-heart-intraday']['dataset']
-            # Recorrer los registros intradiarios
             for entry in intraday_data:
-                # Obtener el tiempo y el ritmo cardíaco
                 time = entry['time']
                 heart_rate = entry['value']
-                # Agregar los datos a la lista
                 csv_data.append([self.user_id,date, time, heart_rate])
 
-        # Escribir los datos en un archivo CSV
+
         csv_file_path = f"app/apiData/heart_rate_data_{4}.csv"
         with open(csv_file_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
@@ -93,6 +89,58 @@ class FitbitAPI:
             writer.writerows(csv_data)
 
         print(f"Los datos se han escrito en el archivo CSV: {csv_file_path}")
+    
+    def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time,dates):
+
+        if self.access_token_is_expired():
+            self.refresh_access_token()
+
+        headers = {
+            "Accept": "application/json",
+            "Authorization": f"Bearer {self.access_token}"
+        }
+
+        data_source = ["calories", "distance", "steps"]
+        for source in data_source:
+
+            
+            base_urlSource = f"https://api.fitbit.com/1/user/{self.user_id}/activities/{source}/date/"
+
+            source_data = []
+            for date in dates:
+                url = f"{base_urlSource}{date}/1d/{detail_level}/time/{start_time}/{end_time}.json"
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    source_data.append(data)
+                else:
+                    print(f"Error obteniendo datos para {date}: {response.status_code}")
+                    print(response.text)
+
+            csv_data = []
+
+            for data in source_data:
+    
+                    activities_key = f"activities-{source}"
+                    if activities_key in data:
+                        date = data[activities_key][0]['dateTime']
+                        intraday_key = f"{activities_key}-intraday"
+                        if intraday_key in data:  
+                            intraday_data = data[intraday_key]['dataset']
+                            for entry in intraday_data:
+                                time = entry['time']
+                                value = entry['value']
+                                csv_data.append([self.user_id, date, time, value])
+
+            csv_file_path = f"FitBit API Database/{source}_data_{self.month}.csv"
+            with open(csv_file_path, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Id', 'Date', 'Time', source.capitalize()])
+                writer.writerows(csv_data)
+
+            print(f"Los datos se han escrito en el archivo CSV: {csv_file_path}")
+
+
 
     def store_fitbit_user_info(self, user_id, access_token, refresh_token, expires_in):
         self.user_id = user_id
