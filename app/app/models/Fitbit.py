@@ -2,9 +2,9 @@ import os
 import hashlib
 import base64
 import requests
-from datetime import datetime, timedelta, timezone
 import json
 import csv
+from datetime import datetime, timedelta, timezone
 
 class FitbitAPI:
     def __init__(self, client_id, client_secret):

@@ -10,3 +10,4 @@ pip install lightgbm
 pip install skforecast
 pip install dask[dataframe]
 pip install lightgbm
+pip install jsonlib

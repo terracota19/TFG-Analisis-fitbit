@@ -6,6 +6,7 @@ from flask import Flask, request
 import threading
 import webbrowser
 from app.utils.mini_server import OAuthServer
+from app.models.ml.LightGBM import LightGBM
 from app.models.Fitbit import FitbitAPI
 import os
 
@@ -14,7 +15,6 @@ class Controller:
     def __init__(self, view):
 
        
-        
         self.view = view
         self.mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.model = Mongo("tfg_fitbit", self.mongo_client)
@@ -35,6 +35,12 @@ class Controller:
         #para posteriomenre obtener el access token del cliente autorizado
         self.oauth_server = OAuthServer(self.fitbitAPI)
         self.oauth_server.start_server()
+
+        #Modelo de prediccion, pasarle los datos iniciales previamente porcesados
+        self.datos_train = []
+        self.datos_test = []
+
+        self.light = LightGBM(datos_train=self.datos_train, datos_test=self.datos_test)
        
 
     #(self, collection_name, query, field, value
