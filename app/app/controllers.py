@@ -36,11 +36,7 @@ class Controller:
         self.oauth_server = OAuthServer(self.fitbitAPI)
         self.oauth_server.start_server()
 
-        #Modelo de prediccion, pasarle los datos iniciales previamente porcesados
-        self.datos_train = []
-        self.datos_test = []
-
-        self.light = LightGBM(datos_train=self.datos_train, datos_test=self.datos_test)
+        
        
 
     #(self, collection_name, query, field, value

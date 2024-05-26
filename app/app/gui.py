@@ -270,6 +270,8 @@ class App(tk.Tk):
         #retrieve data from api
         dates = self.get_dates_in_month(self.year, self.month)
         self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+        self.controller.fitbitAPI.getCaloriesDistanceStepsData()
+        
         #getHeartRateData(self, detail_level, start_time, end_time, dates)
        
         

@@ -25,6 +25,9 @@ class LightGBM :
                 lags      = self.lags
         )
 
+        #Entrenamos al modelo con los datos actuales
+        self.fitLight()
+
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
     """
