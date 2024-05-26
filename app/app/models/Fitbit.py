@@ -146,7 +146,7 @@ class FitbitAPI:
         self.user_id = user_id
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)  
+        self.expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)  # Añade esta línea
 
     def generate_code_verifier(self, length=64):
         code_verifier = os.urandom(length)
