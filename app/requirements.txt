@@ -1,15 +1,12 @@
-pip install pillow
-pip install mongo
-pip install pymongo
-pip install tk
-pip install matplotlib
-pip install requests
-pip install Flask
-pip install pybase64
-pip install lightgbm
-pip install skforecast
-pip install dask[dataframe]
-pip install jsonlib
-pip install pandas
-pip install numpy
-pip install scikit-learn
+pillow
+pymongo
+matplotlib
+requests
+Flask
+pybase64
+lightgbm
+skforecast
+dask[dataframe]
+pandas
+numpy
+scikit-learn
