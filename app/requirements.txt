@@ -9,7 +9,6 @@ pip install pybase64
 pip install lightgbm
 pip install skforecast
 pip install dask[dataframe]
-pip install lightgbm
 pip install jsonlib
 pip install pandas
 pip install numpy
