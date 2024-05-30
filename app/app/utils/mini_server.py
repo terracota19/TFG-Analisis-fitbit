@@ -44,8 +44,10 @@ class OAuthServer:
         }
 
         response = requests.post(url, headers=headers, data=data, auth=(client_id, client_secret))
+
         if response.status_code == 200:
             response_data = response.json()
+    
             user_id = response_data['user_id']
             access_token = response_data['access_token']
             refresh_token = response_data['refresh_token']
@@ -57,7 +59,7 @@ class OAuthServer:
             print(f"La solicitud falló con el código de estado {response.status_code}")
             
     def store_fitbit_user_info(self, user_id, access_token, refresh_token,expires_in):
-        self.fitbit_api.store_fitbit_user_info(user_id, access_token, refresh_token,expires_in)
+        self.fitbit_api.storeFitbitUserInfo(user_id, access_token, refresh_token,expires_in)
 
     def start_server(self):
         if not self.flask_thread or not self.flask_thread.is_alive():

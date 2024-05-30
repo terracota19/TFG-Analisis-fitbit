@@ -12,25 +12,35 @@ from app.models.ml.LightGBM import LightGBM
 
 class FitbitAPI:
     def __init__(self, client_id, client_secret):
+
         self.client_id = client_id
         self.client_secret = client_secret
         self.code_verifier = None
         self.code_challenge = None
         self.state = None
+
+        #info cambiante
         self.access_token = None
         self.refresh_token = None
         self.user_id = None
-        self.expires_at = None
-        self.year = datetime.now().year
-        self.month = datetime.now().month
-        self.day = datetime.now().day
+        self.expires_in = None
+        
         self.data = None
         self.datos_train = None
         self.datos_test = None
         self.heartRateData = None
         self.exogenousData = None
         self.authentification_url = self.generate_authorization_url()
+
         self.light = LightGBM(datos_train=self.datos_train, datos_test=self.datos_test)
+
+
+
+    def storeFitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
+        self.access_token = new_access_token
+        self.refresh_token = new_refresh_token
+        self.expires_in = new_expires_in
+        self.user_id = user_id
 
     def combine_monthly_data(self, base_filename, output_filename):
         combined_data = pd.DataFrame()
@@ -43,6 +53,7 @@ class FitbitAPI:
                 continue
         combined_data.to_csv(output_filename, index=False)
         print(f"Los datos han sido combinados y guardados en '{output_filename}'.")
+
 
     def dataPreprocess(self):
         self.combine_monthly_data("calories_data", "app/apiData/calories_merged.csv")
@@ -86,27 +97,45 @@ class FitbitAPI:
         self.datos_train.bfill(inplace=True)
         self.datos_test.bfill(inplace=True)
 
-    def access_token_is_expired(self):
-        if self.access_token and self.expires_at:
-            return datetime.utcnow().replace(tzinfo=timezone.utc) > self.expires_at
-        return True
+   
+    def access_token_is_expired(self, access_token, expires_in):
+        if access_token and expires_in:  
+            expires_at_utc = expires_in.astimezone(timezone.utc)
+
+            now_utc = datetime.now(timezone.utc)
+            return now_utc > expires_at_utc
+        else:
+            return True 
+
+    def checkRefreshToken(self):
+         if self.access_token_is_expired(self.access_token, self.expires_in):
+            self.refresh_access_token(self.refresh_token)
 
     def getUserProfile(self):
-        if self.access_token_is_expired():
-            self.refresh_access_token()
+        self.checkRefreshToken()
 
         url = "https://api.fitbit.com/1/user/-/profile.json"
         headers = {"Authorization": f"Bearer {self.access_token}"}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
+            self.guardar_en_csv(response.json())
             return response.json()
         else:
             print(response.status_code, response.text)
 
+    def guardar_en_csv(self, data):
+        csv_filename = f'app/apiData/{self.user_id}/profile.csv'
+        os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
+        csv_headers = data.keys()
+    
+        with open(csv_filename, mode='w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=csv_headers)
+            writer.writeheader()
+            writer.writerow(data)
+
     def fetch_and_store_data(self, base_url, detail_level, start_time, end_time, dates, csv_filename, csv_headers):
-        if self.access_token_is_expired():
-            self.refresh_access_token()
+        self.checkRefreshToken()
 
         headers = {"Accept": "application/json", "Authorization": f"Bearer {self.access_token}"}
         all_data = []
@@ -140,24 +169,29 @@ class FitbitAPI:
         print(f"Los datos se han escrito en el archivo CSV: {csv_filename}")
 
     def getHeartRateData(self, detail_level, start_time, end_time, dates):
+        self.checkRefreshToken()
+
         base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/heart/date/"
         self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
-                                  f"app/apiData/heart_rate_data_{self.month}.csv", 
-                                  ['Id', 'Date', 'Time', 'Heart Rate'])
+                                  f"app/{self.user_id}/apiData/heart_rate_data_{datetime.today().month}.csv", 
+                                  ['Id', 'Date', 'Time', 'HeartRate'])
 
     def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time, dates):
+        self.checkRefreshToken()
+
         data_sources = ["calories", "distance", "steps"]
         for source in data_sources:
             base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/{source}/date/"
             self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
-                                      f"FitBit API Database/{source}_data_{self.month}.csv", 
+                                      f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
                                       ['Id', 'Date', 'Time', source.capitalize()])
 
-    def store_fitbit_user_info(self, user_id, access_token, refresh_token, expires_in):
+    def storeFitbitUserInfo(self, user_id, access_token, refresh_token, expires_in):
+        
         self.user_id = user_id
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+        self.expires_in = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
 
     def generate_code_verifier(self, length=64):
         code_verifier = base64.urlsafe_b64encode(os.urandom(length)).rstrip(b'=').decode('utf-8')
@@ -199,7 +233,7 @@ class FitbitAPI:
 
         if response.status_code == 200:
             response_data = response.json()
-            self.store_fitbit_user_info(response_data["user_id"], response_data["access_token"], 
+            self.storeFitbitUserInfo(response_data["user_id"], response_data["access_token"], 
                                         response_data["refresh_token"], response_data["expires_in"])
             return response_data["access_token"], response_data["refresh_token"], response_data["user_id"]
         else:
@@ -207,20 +241,29 @@ class FitbitAPI:
             print(response.text)
             return None
 
-    def refresh_access_token(self):
+    def refresh_access_token(self, refresh_token):
         url = "https://api.fitbit.com/oauth2/token"
         auth_header = base64.b64encode(f"{self.client_id}:{self.client_secret}".encode()).decode()
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": f"Basic {auth_header}"
         }
-        data = {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
+        data = {"grant_type": "refresh_token", "refresh_token": refresh_token}
         response = requests.post(url, headers=headers, data=data)
 
         if response.status_code == 200:
             response_data = response.json()
-            self.store_fitbit_user_info(self.user_id, response_data["access_token"], 
-                                        response_data["refresh_token"], response_data["expires_in"])
+
+            #Store token info
+    
+            self.access_token = response_data["access_token"]
+            self.refresh_token = response_data["refresh_token"]
+            self.expires_in =  response_data["expires_in"]
+            self.user_id = response_data["user_id"]
+
+            return response_data["access_token"], response_data["refresh_token"], response_data["expires_in"], response_data["user_id"]
         else:
+            print(refresh_token)
             print(f"Error refreshing access token: {response.status_code}")
             print(response.text)
+            return

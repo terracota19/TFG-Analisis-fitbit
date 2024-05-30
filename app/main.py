@@ -6,7 +6,7 @@ if __name__ == "__main__":
     def on_close():
         
         #Cerramos la conexion con mongo, ya que no se va a utilizar 
-        app.controller.model.close_connection()
+        app.controller.mongo.close_connection()
         
         #paramos el servidor porque ya no se va a utilizar
         app.controller.oauth_server.stop_server()

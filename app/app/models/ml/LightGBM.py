@@ -26,7 +26,7 @@ class LightGBM :
         )
 
         #Entrenamos al modelo con los datos actuales
-        self.fitLight()
+        #self.fitLight()
 
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
