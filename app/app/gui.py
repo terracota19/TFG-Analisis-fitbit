@@ -264,6 +264,6 @@ class App(tk.Tk):
         #retrieve data from api
         dates = self.get_dates_in_month(datetime.today().month)
         #de momento para comprobar acceso autorizada de clientes distintos con previo consentimiento
-        self.controller.fitbitAPI.getUserProfile()
-        #self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
-        #self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)    
+        #self.controller.fitbitAPI.getUserProfile()
+        self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+        self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)    

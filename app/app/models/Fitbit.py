@@ -161,6 +161,11 @@ class FitbitAPI:
                 value = entry['value']
                 csv_data.append([self.user_id, date, time, value])
 
+        # Crear el directorio si no existe
+        directory = os.path.dirname(csv_filename)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+
         with open(csv_filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(csv_headers)
@@ -173,8 +178,8 @@ class FitbitAPI:
 
         base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/heart/date/"
         self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
-                                  f"app/{self.user_id}/apiData/heart_rate_data_{datetime.today().month}.csv", 
-                                  ['Id', 'Date', 'Time', 'HeartRate'])
+                                f"app/apiData/{self.user_id}/heart_rate_data_{datetime.today().month}.csv", 
+                                ['Id', 'Date', 'Time', 'HeartRate'])
 
     def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time, dates):
         self.checkRefreshToken()
