@@ -97,7 +97,7 @@ class FitbitAPI:
         self.datos_train.bfill(inplace=True)
         self.datos_test.bfill(inplace=True)
 
-        self.light.fitLight()
+        #self.light.fitLight()
 
    
     def access_token_is_expired(self, access_token, expires_in):
