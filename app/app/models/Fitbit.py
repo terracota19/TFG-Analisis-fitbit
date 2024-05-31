@@ -73,12 +73,8 @@ class FitbitAPI:
             data = pd.read_csv(file)
             combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
 
-        combined_final_data['Time'] = pd.to_datetime(combined_final_data['Date'] + ' ' + combined_final_data['Time'])
-        combined_final_data.drop(columns='Date', inplace=True)
-        combined_final_data['HeartRate'] = combined_final_data.pop('Heart Rate')
-        combined_final_data.to_csv("app/apiData/test_train_data_api_merged.csv", index=False)
+        combined_final_data.to_csv(f"app/apiData/{self.user_id}/test_train_data_api_merged.csv", index=False)
 
-        print(combined_final_data.head())
         self.perfectDataForPrediction(combined_final_data)
 
     def perfectDataForPrediction(self, data):
@@ -97,7 +93,7 @@ class FitbitAPI:
         self.datos_train.bfill(inplace=True)
         self.datos_test.bfill(inplace=True)
 
-        #self.light.fitLight()
+        self.light.fitLight(self.datos_train, self.datos_test)
 
    
     def access_token_is_expired(self, access_token, expires_in):
@@ -151,9 +147,9 @@ class FitbitAPI:
                 print(f"Error obteniendo datos para {date}: {response.status_code}")
                 print(response.text)
 
-        self.store_csv_data(all_data, csv_filename, csv_headers)
+        return all_data
 
-    def store_csv_data(self, data, csv_filename, csv_headers):
+    def store_HeartRate_csv(self, data, csv_filename, csv_headers):
         csv_data = []
         for day_data in data:
             date = day_data['activities-heart'][0]['dateTime']
@@ -175,23 +171,54 @@ class FitbitAPI:
 
         print(f"Los datos se han escrito en el archivo CSV: {csv_filename}")
 
+    
     def getHeartRateData(self, detail_level, start_time, end_time, dates):
         self.checkRefreshToken()
 
         base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/heart/date/"
-        self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
+        all_heart_data =  self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
                                 f"app/apiData/{self.user_id}/heart_rate_data_{datetime.today().month}.csv", 
                                 ['Id', 'Date', 'Time', 'HeartRate'])
+        #Guardar en un csv
+        self.store_HeartRate_csv(all_heart_data,
+                                 csv_filename=f"app/apiData/{self.user_id}/heart_rate_data_{datetime.today().month}.csv" ,
+                                 csv_headers= ['Id', 'Date', 'Time', 'HeartRate'])
+        
+        
+    def store_CaloriesDistanceSteps_csv(self, data, csv_filename, csv_headers):
+            csv_data = []
+            for day_data in data:
+                date = day_data['activities-calories'][0]['dateTime']
+                intraday_data = day_data['activities-calories-intraday']['dataset']
+                for entry in intraday_data:
+                    time = entry['time']
+                    value = entry['value']
+                    csv_data.append([self.user_id, date, time, value])
+
+            directory = os.path.dirname(csv_filename)
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory)
+
+            with open(csv_filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(csv_headers)
+                writer.writerows(csv_data)
+        
 
     def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time, dates):
-        self.checkRefreshToken()
 
+        self.checkRefreshToken()
+        
         data_sources = ["calories", "distance", "steps"]
+
         for source in data_sources:
             base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/{source}/date/"
-            self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
-                                      f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
-                                      ['Id', 'Date', 'Time', source.capitalize()])
+            all_data = self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates,
+                                f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
+                                ['Id', 'Date', 'Time', source.capitalize()])
+            self.store_CaloriesDistanceSteps_csv(all_data,
+                                 csv_filename=f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv",
+                                 csv_headers=['Id', 'Date', 'Time', source.capitalize()])
 
     def storeFitbitUserInfo(self, user_id, access_token, refresh_token, expires_in):
         
@@ -220,15 +247,19 @@ class FitbitAPI:
             ]
         self.code_verifier = self.generate_code_verifier()
         self.code_challenge = self.generate_code_challenge()
+        
         self.state = os.urandom(16).hex()
         scope_string = '+'.join(scopes)
+
         return (f"https://www.fitbit.com/oauth2/authorize?response_type=code&client_id={self.client_id}"
                 f"&scope={scope_string}&code_challenge={self.code_challenge}&code_challenge_method=S256"
                 f"&state={self.state}&redirect_uri={redirect_uri}")
 
     def get_access_token(self, code, state, redirect_uri="http://localhost:5000"):
+
         url = "https://api.fitbit.com/oauth2/token"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
         data = {
             "client_id": self.client_id,
             "grant_type": "authorization_code",
@@ -236,6 +267,7 @@ class FitbitAPI:
             "code": code,
             "code_verifier": self.code_verifier,
         }
+
         response = requests.post(url, headers=headers, data=data, auth=(self.client_id, ''))
 
         if response.status_code == 200:
@@ -270,7 +302,5 @@ class FitbitAPI:
 
             return response_data["access_token"], response_data["refresh_token"], response_data["expires_in"], response_data["user_id"]
         else:
-            print(refresh_token)
             print(f"Error refreshing access token: {response.status_code}")
-            print(response.text)
             return

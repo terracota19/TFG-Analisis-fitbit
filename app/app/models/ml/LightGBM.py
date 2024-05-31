@@ -25,13 +25,15 @@ class LightGBM :
                 lags      = self.lags
         )
 
-        #Entrenamos al modelo con los datos actuales
-        #self.fitLight()
 
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
     """
-    def fitLight(self):
+    def fitLight(self, datos_train, datos_test):
+        
+        self.datos_train = datos_train
+        self.datos_test = datos_test
+
         self.forecaster.fit(y=self.datos_train['HeartRate'], exog=self.datos_train[['Calories','Steps','Distance']])
 
     """
