@@ -9,8 +9,12 @@ class OAuthServer:
         self.app = Flask(__name__)
         self.app.route('/')(self.home)
 
+
+        self.flask_thread = None
+       
+        
         self.fitbit_api = fitbit_api
-        self.oauth_server.start_server()
+        self.start_server()
 
     
         self.code = None
