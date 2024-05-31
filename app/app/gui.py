@@ -22,15 +22,9 @@ class App(tk.Tk):
 
         self.controller = Controller(self)
         
-        #Server
-        self.flask_thread = threading.Thread(target=self.controller)
-        self.flask_thread.daemon = True
-        self.flask_thread.start()
+        self.mainFunction()
 
-   
-        self.createLoginAuthFrame()
-
-    def createLoginAuthFrame(self):
+    def mainFunction(self):
         self.login_auth_frame = tk.Frame(self, bg="white")
         self.login_auth_frame.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
 
@@ -195,6 +189,7 @@ class App(tk.Tk):
         password = self.register_password_entry.get()
         age = self.age_entry.get()
 
+        #QUizas pedir info a Mongo
         user_id = self.controller.fitbitAPI.user_id
         access_token = self.controller.fitbitAPI.access_token
         refresh_token = self.controller.fitbitAPI.refresh_token
@@ -226,13 +221,11 @@ class App(tk.Tk):
 
     def createPredictionInfo(self):
         # Datos de ejemplo para el gráfico
-        predicciones = [1, 2, 3, 4, 5]
-        datos_test = [10, 15, 7, 10, 5]
+        predicciones = self.controller.predictions()
 
         fig, ax = plt.subplots(figsize=(5, 4))  
-        ax.plot(predicciones, datos_test)
+        ax.plot(predicciones)
 
-        
         ax.set_xlabel('Minutos')
         ax.set_ylabel('HeartRate')
         canvas = FigureCanvasTkAgg(fig, master=self.prediction_frame)

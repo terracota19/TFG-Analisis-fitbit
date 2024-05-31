@@ -27,9 +27,12 @@ class Controller:
     
         #Servidor levanto el servidor que escuchara en localhost::5000 para obtener el code y state, 
         self.oauth_server = OAuthServer(self.fitbitAPI)
-        self.oauth_server.start_server()
+        
 
     
+    def  predictions(self):
+        return self.fitbitAPI.predictions()
+
     def updateApi_lastUpdate(self):
         hora_actual = datetime.now()
         if self.logged_in_user:

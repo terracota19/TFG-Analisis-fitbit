@@ -10,9 +10,9 @@ class OAuthServer:
         self.app.route('/')(self.home)
 
         self.fitbit_api = fitbit_api
+        self.oauth_server.start_server()
 
-        self.flask_thread = None
-
+    
         self.code = None
         self.state = None
 

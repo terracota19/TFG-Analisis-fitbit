@@ -28,14 +28,16 @@ class FitbitAPI:
         self.data = None
         self.datos_train = None
         self.datos_test = None
-        self.heartRateData = None
-        self.exogenousData = None
         self.authentification_url = self.generate_authorization_url()
 
         self.light = LightGBM(datos_train=self.datos_train, datos_test=self.datos_test)
 
 
 
+
+    def predictions(self):
+        return self.light.predictions()
+    
     def storeFitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
         self.access_token = new_access_token
         self.refresh_token = new_refresh_token

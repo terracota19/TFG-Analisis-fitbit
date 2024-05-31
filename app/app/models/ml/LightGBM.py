@@ -15,6 +15,7 @@ class LightGBM :
         self.lags =  5 * self.steps
         self.datos_train = datos_train
         self.datos_test = datos_test
+        self.minutes= None
 
         #modelo 
         self.light = lgb.LGBMRegressor(objective='regression', random_state=123)
@@ -26,6 +27,12 @@ class LightGBM :
         )
 
 
+
+    def predictions(self):
+        if self.predicciones :
+            return self.predicciones
+        return 
+    
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
     """
@@ -39,9 +46,9 @@ class LightGBM :
     """
         Para predecir a x minutos en el futuro
     """
-    def forecast(self, minutos):
+    def forecast(self, minutes):
         #Entrenamos al modelo
-        self.fitLight()
+        self.minutes = minutes
 
         self.predicciones = self.forecaster.predict(steps=self.steps,  exog=self.datos_test[['Calories', 'Steps', 'Distance']])
         return self.predicciones
