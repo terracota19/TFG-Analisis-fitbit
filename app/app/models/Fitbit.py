@@ -163,7 +163,7 @@ class FitbitAPI:
                 value = entry['value']
                 csv_data.append([self.user_id, date, time, value])
 
-        # Crear el directorio si no existe
+        
         directory = os.path.dirname(csv_filename)
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
