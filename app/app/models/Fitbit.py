@@ -45,7 +45,7 @@ class FitbitAPI:
     def combine_monthly_data(self, base_filename, output_filename):
         combined_data = pd.DataFrame()
         for month in range(1, 13):
-            filename = f"app/apiData/{base_filename}_{month}.csv"
+            filename = f"app/apiData/{self.user_id}/{base_filename}_{datetime.today().month}.csv"
             try:
                 monthly_data = pd.read_csv(filename)
                 combined_data = pd.concat([combined_data, monthly_data])
@@ -56,16 +56,16 @@ class FitbitAPI:
 
 
     def dataPreprocess(self):
-        self.combine_monthly_data("calories_data", "app/apiData/calories_merged.csv")
-        self.combine_monthly_data("distance_data", "app/apiData/distance_merged.csv")
-        self.combine_monthly_data("heart_rate_data", "app/apiData/heart_rate_merged.csv")
-        self.combine_monthly_data("steps_data", "app/apiData/steps_merged.csv")
+        self.combine_monthly_data("calories_data", f"app/apiData/{self.user_id}/calories_merged.csv")
+        self.combine_monthly_data("distance_data", f"app/apiData/{self.user_id}/distance_merged.csv")
+        self.combine_monthly_data("heart_rate_data", f"app/apiData/{self.user_id}/heart_rate_merged.csv")
+        self.combine_monthly_data("steps_data", f"app/apiData/{self.user_id}/steps_merged.csv")
 
         merged_files = [
-            "app/apiData/calories_merged.csv",
-            "app/apiData/distance_merged.csv",
-            "app/apiData/heart_rate_merged.csv",
-            "app/apiData/steps_merged.csv"
+            f"app/apiData/{self.user_id}/calories_merged.csv",
+            f"app/apiData/{self.user_id}/distance_merged.csv",
+            f"app/apiData/{self.user_id}/heart_rate_merged.csv",
+            f"app/apiData/{self.user_id}/steps_merged.csv"
         ]
 
         combined_final_data = pd.read_csv(merged_files[0])
@@ -96,6 +96,8 @@ class FitbitAPI:
 
         self.datos_train.bfill(inplace=True)
         self.datos_test.bfill(inplace=True)
+
+        self.light.fitLight()
 
    
     def access_token_is_expired(self, access_token, expires_in):
