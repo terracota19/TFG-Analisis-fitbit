@@ -6,8 +6,9 @@ import json
 import csv
 import pandas as pd
 import numpy as np
+
 from datetime import datetime, timedelta, timezone
-from app.models.ml.LightGBM import LightGBM
+from app.models.ML.LightGBM import LightGBM
 
 
 class FitbitAPI:
@@ -47,7 +48,7 @@ class FitbitAPI:
     def combine_monthly_data(self, base_filename, output_filename):
         combined_data = pd.DataFrame()
         for month in range(1, 13):
-            filename = f"app/apiData/{self.user_id}/{base_filename}_{datetime.today().month}.csv"
+            filename = f"app/DataAPI/{self.user_id}/{base_filename}_{datetime.today().month}.csv"
             try:
                 monthly_data = pd.read_csv(filename)
                 combined_data = pd.concat([combined_data, monthly_data])
@@ -58,16 +59,16 @@ class FitbitAPI:
 
 
     def dataPreprocess(self):
-        self.combine_monthly_data("calories_data", f"app/apiData/{self.user_id}/calories_merged.csv")
-        self.combine_monthly_data("distance_data", f"app/apiData/{self.user_id}/distance_merged.csv")
-        self.combine_monthly_data("heart_rate_data", f"app/apiData/{self.user_id}/heart_rate_merged.csv")
-        self.combine_monthly_data("steps_data", f"app/apiData/{self.user_id}/steps_merged.csv")
+        self.combine_monthly_data("calories_data", f"app/DataAPI/{self.user_id}/calories_merged.csv")
+        self.combine_monthly_data("distance_data", f"app/DataAPI/{self.user_id}/distance_merged.csv")
+        self.combine_monthly_data("heart_rate_data", f"app/DataAPI/{self.user_id}/heart_rate_merged.csv")
+        self.combine_monthly_data("steps_data", f"app/DataAPI/{self.user_id}/steps_merged.csv")
 
         merged_files = [
-            f"app/apiData/{self.user_id}/calories_merged.csv",
-            f"app/apiData/{self.user_id}/distance_merged.csv",
-            f"app/apiData/{self.user_id}/heart_rate_merged.csv",
-            f"app/apiData/{self.user_id}/steps_merged.csv"
+            f"app/DataAPI/{self.user_id}/calories_merged.csv",
+            f"app/DataAPI/{self.user_id}/distance_merged.csv",
+            f"app/DataAPI/{self.user_id}/heart_rate_merged.csv",
+            f"app/DataAPI/{self.user_id}/steps_merged.csv"
         ]
 
         combined_final_data = pd.read_csv(merged_files[0])
@@ -75,7 +76,7 @@ class FitbitAPI:
             data = pd.read_csv(file)
             combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
 
-        combined_final_data.to_csv(f"app/apiData/{self.user_id}/test_train_data_api_merged.csv", index=False)
+        combined_final_data.to_csv(f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv", index=False)
 
         self.perfectDataForPrediction(combined_final_data)
 
@@ -125,7 +126,7 @@ class FitbitAPI:
             print(response.status_code, response.text)
 
     def guardar_en_csv(self, data):
-        csv_filename = f'app/apiData/{self.user_id}/profile.csv'
+        csv_filename = f'app/DataAPI/{self.user_id}/profile.csv'
         os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
         csv_headers = data.keys()
     
@@ -179,11 +180,11 @@ class FitbitAPI:
 
         base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/heart/date/"
         all_heart_data =  self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
-                                f"app/apiData/{self.user_id}/heart_rate_data_{datetime.today().month}.csv", 
+                                f"app/DataAPI/{self.user_id}/heart_rate_data_{datetime.today().month}.csv", 
                                 ['Id', 'Date', 'Time', 'HeartRate'])
         #Guardar en un csv
         self.store_HeartRate_csv(all_heart_data,
-                                 csv_filename=f"app/apiData/{self.user_id}/heart_rate_data_{datetime.today().month}.csv" ,
+                                 csv_filename=f"app/DataAPI/{self.user_id}/heart_rate_data_{datetime.today().month}.csv" ,
                                  csv_headers= ['Id', 'Date', 'Time', 'HeartRate'])
         
         
@@ -216,10 +217,10 @@ class FitbitAPI:
         for source in data_sources:
             base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/{source}/date/"
             all_data = self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates,
-                                f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
+                                f"app/DataAPI/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
                                 ['Id', 'Date', 'Time', source.capitalize()])
             self.store_CaloriesDistanceSteps_csv(all_data,
-                                 csv_filename=f"app/apiData/{self.user_id}/{source}_data_{datetime.today().month}.csv",
+                                 csv_filename=f"app/DataAPI/{self.user_id}/{source}_data_{datetime.today().month}.csv",
                                  csv_headers=['Id', 'Date', 'Time', source.capitalize()])
 
     def storeFitbitUserInfo(self, user_id, access_token, refresh_token, expires_in):

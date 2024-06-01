@@ -1,6 +1,7 @@
-from app.gui import App
+from app.views.Gui import App
 
 if __name__ == "__main__":
+    
     app = App()
 
     def on_close():
@@ -8,7 +9,7 @@ if __name__ == "__main__":
         #Cerramos la conexion con mongo, ya que no se va a utilizar 
         app.controller.mongo.close_connection()
         
-        #paramos el servidor porque ya no se va a utilizar
+        #Paramos el servidor porque ya no se va a utilizar
         app.controller.oauth_server.stop_server()
 
         app.destroy()

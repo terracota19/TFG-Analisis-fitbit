@@ -13,10 +13,10 @@ IF %ERRORLEVEL% NEQ 0 (
 
 REM Instalar dependencias desde requirements.txt
 echo Installing dependencies...
-pip install -r requirements.txt
+pip install -r app/main/requirements.txt
 
 REM Iniciar MongoDB en segundo plano
 start "" /B %MONGO_PATH% --dbpath %DB_PATH%
 
 REM Ejecutar la app de Python
-start "" "python.exe" "main.py"
+start "" "python.exe" "/app/main/main.py"
