@@ -27,11 +27,11 @@ class LightGBM :
         )
 
 
-
-    def predictions(self):
-        if self.predicciones :
-            return self.predicciones
-        return 
+    """
+        Predice en el futuro para dentro de "minutes" minutos
+    """
+    def predictions(self, minutes):
+        return self.forecast(minutes)
     
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
@@ -47,8 +47,7 @@ class LightGBM :
         Para predecir a x minutos en el futuro
     """
     def forecast(self, minutes):
-        #Entrenamos al modelo
+        #Forecasting
         self.minutes = minutes
-
         self.predicciones = self.forecaster.predict(steps=self.steps,  exog=self.datos_test[['Calories', 'Steps', 'Distance']])
         return self.predicciones

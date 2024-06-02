@@ -30,8 +30,8 @@ class Controller:
         
 
     
-    def  predictions(self):
-        return self.fitbitAPI.predictions()
+    def  predictions(self, minutes):
+        return self.fitbitAPI.predictions(minutes)
 
     def updateApi_lastUpdate(self):
         hora_actual = datetime.now()

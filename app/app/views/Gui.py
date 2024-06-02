@@ -155,7 +155,6 @@ class App(tk.Tk):
         self.status_frame = tk.Frame(frame, bg="#457EAC")
         self.status_frame.pack(pady=10, padx=20, fill=tk.X)
 
-        #
         ult_actualizacion = self.controller.last_update()
         fecha_legible = ult_actualizacion.strftime("%A, %d de %B de %Y a las %H:%M:%S")
         texto_actualizacion_pulsera = f"Última actualización: {fecha_legible}"
@@ -170,18 +169,13 @@ class App(tk.Tk):
 
         self.authorize_button = tk.Button(self.register_frame, text="Paso 1: Autorizar con Fitbit", command=self.controller.authorize_with_fitbit)
         self.authorize_button.pack(padx=10,pady=10)
-
-
         self.register_button = tk.Button(frame, text="Paso 2: Registrarse", fg="white", bg="#457EAC", command=self.on_register_submit)
         self.register_button.pack(pady=20, padx=20)
 
     def createPredictionButton(self,frame):
         self.register_button = tk.Button(frame,width=10, height=1, text="Predecir", fg="white", bg="#457EAC", command=self.on_predict_submit)
         self.register_button.grid(row = 2, column= 1, pady=20, padx=20)
-
         self.prediction_frame = None
-
-
 
     def on_register_submit(self):
         user = self.register_user_entry.get()
@@ -212,16 +206,18 @@ class App(tk.Tk):
         self.prediction_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.prediction_frame, text="Predicción")
 
-        self.createPredictionInfo()
+
+        #Predecir para dentro 5 minutos
+        self.createPredictionInfo(5)
 
         # Botón de actualización
         self.update_prediction_button = tk.Button(self.prediction_frame, width=10, height=1, text="Actualizar", fg="white", bg="#457EAC", command=self.update_status)
         self.update_prediction_button.grid(row=0, column=2, columnspan=3, pady=10)  
 
 
-    def createPredictionInfo(self):
+    def createPredictionInfo(self, minutes):
         # Datos de ejemplo para el gráfico
-        predicciones = self.controller.predictions()
+        predicciones = self.controller.predictions(minutes)
 
         fig, ax = plt.subplots(figsize=(5, 4))  
         ax.plot(predicciones)
@@ -257,4 +253,5 @@ class App(tk.Tk):
         #retrieve data from api
         dates = self.get_dates_in_month(datetime.today().month)
         self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
-        self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)    
+        self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)  
+        self.controller.fitbitAPI.dataPreprocess() #Merger all data, and preporcess for training Light 

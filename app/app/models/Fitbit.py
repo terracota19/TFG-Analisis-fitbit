@@ -34,10 +34,8 @@ class FitbitAPI:
         self.light = LightGBM(datos_train=self.datos_train, datos_test=self.datos_test)
 
 
-
-
-    def predictions(self):
-        return self.light.predictions()
+    def predictions(self, minutes):
+        return self.light.predictions(minutes)
     
     def storeFitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
         self.access_token = new_access_token
@@ -76,9 +74,20 @@ class FitbitAPI:
             data = pd.read_csv(file)
             combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
 
+
+        combined_final_data = self.dateParser(combined_final_data)
+
         combined_final_data.to_csv(f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv", index=False)
 
         self.perfectDataForPrediction(combined_final_data)
+
+    def dateParser(self, datos_combinados_final):
+        archivo_final = f"app(DataAPI/{self.user_id}/test_train_data_api_merged.csv"
+
+        datos_combinados_final['Time'] = pd.to_datetime(datos_combinados_final['Date'] + ' ' + datos_combinados_final['Time'])
+        datos_combinados_final.drop(columns='Date', inplace=True)
+
+        return datos_combinados_final
 
     def perfectDataForPrediction(self, data):
         data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
