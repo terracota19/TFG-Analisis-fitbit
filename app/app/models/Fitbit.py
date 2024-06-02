@@ -135,7 +135,7 @@ class FitbitAPI:
             writer.writeheader()
             writer.writerow(data)
 
-    def fetch_and_store_data(self, base_url, detail_level, start_time, end_time, dates, csv_filename, csv_headers):
+    def fetchData(self, base_url, detail_level, start_time, end_time, dates, csv_filename, csv_headers):
         self.checkRefreshToken()
 
         headers = {"Accept": "application/json", "Authorization": f"Bearer {self.access_token}"}
@@ -149,7 +149,7 @@ class FitbitAPI:
             else:
                 print(f"Error obteniendo datos para {date}: {response.status_code}")
                 print(response.text)
-
+        
         return all_data
 
     def store_HeartRate_csv(self, data, csv_filename, csv_headers):
@@ -162,7 +162,7 @@ class FitbitAPI:
                 value = entry['value']
                 csv_data.append([self.user_id, date, time, value])
 
-        
+        #Crear directorio si no existe
         directory = os.path.dirname(csv_filename)
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
@@ -179,7 +179,7 @@ class FitbitAPI:
         self.checkRefreshToken()
 
         base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/heart/date/"
-        all_heart_data =  self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates, 
+        all_heart_data =  self.fetchData(base_url, detail_level, start_time, end_time, dates, 
                                 f"app/DataAPI/{self.user_id}/heart_rate_data_{datetime.today().month}.csv", 
                                 ['Id', 'Date', 'Time', 'HeartRate'])
         #Guardar en un csv
@@ -188,24 +188,33 @@ class FitbitAPI:
                                  csv_headers= ['Id', 'Date', 'Time', 'HeartRate'])
         
         
-    def store_CaloriesDistanceSteps_csv(self, data, csv_filename, csv_headers):
-            csv_data = []
-            for day_data in data:
-                date = day_data['activities-calories'][0]['dateTime']
-                intraday_data = day_data['activities-calories-intraday']['dataset']
-                for entry in intraday_data:
-                    time = entry['time']
-                    value = entry['value']
-                    csv_data.append([self.user_id, date, time, value])
+    def store_CaloriesDistanceSteps_csv(self,source, source_data, csv_filename, csv_headers):
+        csv_data = []
+        for data in source_data:
+                activities_key = f"activities-{source}"
+                if activities_key in data:
+                    date = data[activities_key][0]['dateTime']
+                    intraday_key = f"{activities_key}-intraday"
+                    if intraday_key in data:  
+                        intraday_data = data[intraday_key]['dataset']
+                        for entry in intraday_data:
+                            time = entry['time']
+                            value = entry['value']
+                            csv_data.append([self.user_id, date, time, value])
 
-            directory = os.path.dirname(csv_filename)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory)
+        csv_file_path = f"app/DataAPI/{self.user_id}/{source}_data_{datetime.today().month}.csv"
 
-            with open(csv_filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_headers)
-                writer.writerows(csv_data)
+        #Crear el directorio si no existe
+        directory = os.path.dirname(csv_file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+
+        with open(csv_file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Id', 'Date', 'Time', source.capitalize()])
+            writer.writerows(csv_data)
+
+        print(f"Los datos se han escrito en el archivo CSV: {csv_file_path}")
         
 
     def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time, dates):
@@ -216,10 +225,11 @@ class FitbitAPI:
 
         for source in data_sources:
             base_url = f"https://api.fitbit.com/1/user/{self.user_id}/activities/{source}/date/"
-            all_data = self.fetch_and_store_data(base_url, detail_level, start_time, end_time, dates,
+            source_data = self.fetchData(base_url, detail_level, start_time, end_time, dates,
                                 f"app/DataAPI/{self.user_id}/{source}_data_{datetime.today().month}.csv", 
                                 ['Id', 'Date', 'Time', source.capitalize()])
-            self.store_CaloriesDistanceSteps_csv(all_data,
+
+            self.store_CaloriesDistanceSteps_csv(source,source_data,
                                  csv_filename=f"app/DataAPI/{self.user_id}/{source}_data_{datetime.today().month}.csv",
                                  csv_headers=['Id', 'Date', 'Time', source.capitalize()])
 
