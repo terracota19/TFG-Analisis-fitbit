@@ -82,8 +82,7 @@ class FitbitAPI:
         self.perfectDataForPrediction(combined_final_data)
 
     def dateParser(self, datos_combinados_final):
-        archivo_final = f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv"
-
+    
         datos_combinados_final['Time'] = pd.to_datetime(datos_combinados_final['Date'] + ' ' + datos_combinados_final['Time'])
         datos_combinados_final.drop(columns='Date', inplace=True)
 
