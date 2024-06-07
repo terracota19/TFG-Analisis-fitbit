@@ -77,24 +77,51 @@ class FitbitAPI:
         self.combine_monthly_data("heart_rate_data", f"app/app/DataAPI/{self.user_id}/heart_rate_merged.csv")
         self.combine_monthly_data("steps_data", f"app/app/DataAPI/{self.user_id}/steps_merged.csv")
 
+       
         merged_files = [
             f"app/app/DataAPI/{self.user_id}/calories_merged.csv",
             f"app/app/DataAPI/{self.user_id}/distance_merged.csv",
             f"app/app/DataAPI/{self.user_id}/heart_rate_merged.csv",
             f"app/app/DataAPI/{self.user_id}/steps_merged.csv"
         ]
+        #TODO  mirar esto
+        combined_final_data = None
 
-        combined_final_data = pd.read_csv(merged_files[0])
-        for file in merged_files[1:]:
+        for file in merged_files:
+            # Read each CSV file
             data = pd.read_csv(file)
-            combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
+            
+            # Print the head of the data for debugging purposes
+            print(f"fichero {file}")
+            print(data.head())
+            
+            # Merge the dataframes on 'Id', 'Date', and 'Time' columns
+            if combined_final_data is None:
+                combined_final_data = data
+            else:
+                combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
+            
+            # Print statement to indicate successful merge
+            print(f"Merged file {file} into combined_final_data")
 
+        # Optionally, you can save the combined data to a new CSV file
+        combined_file_path = f"app/app/DataAPI/{self.user_id}/test_train_data_api_merged.csv"
+        combined_final_data.to_csv(combined_file_path, index=False)
+        print(f"Los datos combinados han sido guardados en '{combined_file_path}'")
 
-        combined_final_data = self.dateParser(combined_final_data)
+       
+        #combined_final_data = combined_final_data.sort_values(by=["Id", "Date", "Time"]).reset_index(drop=True)
 
-        combined_final_data.to_csv(f"app/app/DataAPI/{self.user_id}/test_train_data_api_merged.csv", index=False)
+        #print("Datos antes de entrar al dataParse:")
+        #print(combined_final_data.head())
+        #combined_final_data = self.dateParser(combined_final_data)
+        #print("Pintamos la cabecera después del dataParser:")
+        #print(combined_final_data.head())
+       #print("Pintamos la cabecera después del dataParser:")
+        #combined_final_data.to_csv(f"app/app/DataAPI/{self.user_id}/test_train_data_api_merged.csv", index=False)
+        #print(f"Saved data onto test_train_data_api_merged.csv")
 
-        self.perfectDataForPrediction(combined_final_data)
+        #self.perfectDataForPrediction(combined_final_data)
 
     def dateParser(self, datos_combinados_final):
     
@@ -104,6 +131,7 @@ class FitbitAPI:
         return datos_combinados_final
 
     def perfectDataForPrediction(self, data):
+        print(f"Perfecting data for Light Pred")
         data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
         #data = data[~data.index.duplicated(keep='first')]  
         data.set_index('Time', inplace=True)
