@@ -4,6 +4,12 @@ REM Configurar variables
 SET MONGO_PATH="C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe"
 SET DB_PATH="C:\hlocal\datos"
 
+REM Verificar si el directorio DB_PATH existe, si no, crearlo
+IF NOT EXIST %DB_PATH% (
+    echo Creating directory %DB_PATH%...
+    mkdir %DB_PATH%
+)
+
 REM Verificar si pip está instalado
 python -m pip --version
 IF %ERRORLEVEL% NEQ 0 (
