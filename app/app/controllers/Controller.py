@@ -29,7 +29,10 @@ class Controller:
     
         #API fitbit
         #TODO de momento se los paso por arg, leer del fichero o import con python como macro
-        self.fitbitAPI = FitbitAPI("23RY6J","74cfc7ed3a2a070ecfd1139ac9366b17", self.mongo)
+        # https://dev.fitbit.com/apps
+        #self.fitbitAPI = FitbitAPI("23RY6J","74cfc7ed3a2a070ecfd1139ac9366b17", self.mongo)
+        self.fitbitAPI = FitbitAPI("23RFGM","4f602285fd2df734b04fe7d26a6680d7", self.mongo)
+
     
         #Servidor levanto el servidor que escuchara en localhost::5000 para obtener el code y state, 
         self.oauth_server = OAuthServer(self.fitbitAPI)
