@@ -23,7 +23,7 @@ class OAuthServer:
         self.state = request.args.get('state')
 
         self.get_access_token()
-        return "¡Puedes Cerrar y Proceder a registrarte en HeartPred'it!"
+        return "¡Puedes Cerrar este navegador y Proceder a registrarte en HeartPred'it!"
 
     def get_access_token(self):
         
