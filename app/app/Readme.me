@@ -1,0 +1,17 @@
+# Instalacion de la aplicación.
+
+1. Descargar mongodb (la versión v7.0.x) desde 'https://www.mongodb.com/try/download/community' con la extensión 'msi'
+2. Instalar la aplicación y seguir los siguientes pasos:
+- En la ventana de 'Choose setup type' elegimos complete
+- En la ventana de 'Sever configuration' desactivamos “Install MongoD as a Service". Esto permitirá arrancar el servidor en el 
+momento en el que lo vayamos a usar.
+- Instalamos MongoDB Compass
+4 - En variables de entorno del usuario y sistema añadimos la carpeta bin en 'Path' para poder ejecutar los comandos 'mongod'.
+5 - Crear en disco C la carpeta 'C:/hlocal/datos'.
+6 - Instalar python desde la página oficial 'https://www.python.org/downloads/'. Nos descargamos la última versión.
+- En la página de instalación activar el flag de creación de variable de entorno a PATH.
+
+# Pasos para ejecutar la aplicación.
+
+1. Lanzar mongodb. Ejecutar el siguiente comando 'mongod -dbpath C:\hlocal\datos' (puedes ejecutarlo desde cualquier parte).
+2. Lanzar la aplicación en donde tengas el main.py con el siguiente comando: 'python ruta:/main.py'
