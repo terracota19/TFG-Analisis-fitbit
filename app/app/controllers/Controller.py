@@ -45,7 +45,10 @@ class Controller:
     def validate_email(self, email):
         email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(email_regex, email)
+        
     
+    def datatest(self):
+        return self.fitbitAPI.datatest()
 
     def checkLasUpdate(self):
         user_id = self.logged_in_user.get("_id")

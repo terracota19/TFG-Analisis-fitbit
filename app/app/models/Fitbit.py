@@ -41,6 +41,10 @@ class FitbitAPI:
     def predictions(self, minutes):
         return self.light.predictions(minutes)
     
+    
+    def datatest(self):
+        return self.light.datatest()
+        
     def storeFibitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
         
         self.access_token = new_access_token
@@ -59,7 +63,7 @@ class FitbitAPI:
     def combine_monthly_data(self, base_filename, output_filename):
         combined_data = pd.DataFrame()
         for month in range(1, 13):
-            filename = f"app/DataAPI/{self.user_id}/{base_filename}_{datetime.today().month}.csv"
+            filename = f"app/DataAPI/{self.user_id}/{base_filename}_{month}.csv"
             try:
                 monthly_data = pd.read_csv(filename)
                 combined_data = pd.concat([combined_data, monthly_data])
@@ -71,6 +75,7 @@ class FitbitAPI:
 
 
     def dataPreprocess(self):
+        print(f"Init merge data\n")
 
         self.combine_monthly_data("calories_data", f"app/DataAPI/{self.user_id}/calories_merged.csv")
         self.combine_monthly_data("distance_data", f"app/DataAPI/{self.user_id}/distance_merged.csv")
@@ -84,44 +89,30 @@ class FitbitAPI:
             f"app/DataAPI/{self.user_id}/heart_rate_merged.csv",
             f"app/DataAPI/{self.user_id}/steps_merged.csv"
         ]
-        #TODO  mirar esto
+
+        
         combined_final_data = None
 
         for file in merged_files:
-            # Read each CSV file
-            data = pd.read_csv(file)
-            
-            # Print the head of the data for debugging purposes
-            print(f"fichero {file}")
-            print(data.head())
-            
-            # Merge the dataframes on 'Id', 'Date', and 'Time' columns
+            data = pd.read_csv(file)    
             if combined_final_data is None:
                 combined_final_data = data
             else:
                 combined_final_data = pd.merge(combined_final_data, data, on=["Id", "Date", "Time"], how="outer")
-            
-            # Print statement to indicate successful merge
+        
             print(f"Merged file {file} into combined_final_data")
 
-        # Optionally, you can save the combined data to a new CSV file
+        
         combined_file_path = f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv"
+        combined_final_data =  self.dateParser(combined_final_data)
+        combined_final_data.dropna(inplace=True)
+        combined_final_data.bfill(inplace = True)
+        
+
         combined_final_data.to_csv(combined_file_path, index=False)
         print(f"Los datos combinados han sido guardados en '{combined_file_path}'")
 
-       
-        #combined_final_data = combined_final_data.sort_values(by=["Id", "Date", "Time"]).reset_index(drop=True)
-
-        #print("Datos antes de entrar al dataParse:")
-        #print(combined_final_data.head())
-        #combined_final_data = self.dateParser(combined_final_data)
-        #print("Pintamos la cabecera después del dataParser:")
-        #print(combined_final_data.head())
-       #print("Pintamos la cabecera después del dataParser:")
-        #combined_final_data.to_csv(f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv", index=False)
-        #print(f"Saved data onto test_train_data_api_merged.csv")
-
-        #self.perfectDataForPrediction(combined_final_data)
+        self.perfectDataForPrediction(combined_final_data)
 
     def dateParser(self, datos_combinados_final):
     
@@ -133,7 +124,9 @@ class FitbitAPI:
     def perfectDataForPrediction(self, data):
         print(f"Perfecting data for Light Pred")
         data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
+        
         #data = data[~data.index.duplicated(keep='first')]  
+        
         data.set_index('Time', inplace=True)
         data = data.asfreq('60s').sort_index()
 
@@ -148,7 +141,11 @@ class FitbitAPI:
         self.datos_train.bfill(inplace=True)
         self.datos_test.bfill(inplace=True)
 
+        print("Entrenando al modelo con LightGBM...\n")
         self.light.fitLight(self.datos_train, self.datos_test)
+        print("Ha finalizado el entrenamiento del modelo con LightGBM...\n")
+
+        
 
    
     def access_token_is_expired(self, access_token, expires_in):

@@ -231,8 +231,12 @@ class App(tk.Tk):
 
     def create_prediction_info(self, minutes):
         predictions = self.controller.predictions(minutes)
+        datos_reales = self.controller.datatest()
         fig, ax = plt.subplots(figsize=(5, 4))
+        
         ax.plot(predictions)
+        ax.plot(datos_reales)
+
         ax.set_xlabel('Minutos')
         ax.set_ylabel('HeartRate')
         canvas = FigureCanvasTkAgg(fig, master=self.prediction_frame)
@@ -258,11 +262,11 @@ class App(tk.Tk):
             dates = self.get_dates_since_last_activity(ult_act) #si tiene fecha de actualzacion, coger desde ese dia hasta el dia de hoy
             
  
-        self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+        #self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
         self.update_progress(30) 
-        self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+        #self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
         self.update_progress(75) 
-        self.controller.updateApi_lastUpdate()
+        #self.controller.updateApi_lastUpdate()
         
         self.controller.fitbitAPI.dataPreprocess()
         self.update_progress(100) 
