@@ -23,10 +23,8 @@ class LightGBM :
         self.forecaster = None 
         
     def datatest(self):
-        if self.datos_test :
-            return self.datos_test
-        return None
-
+        return self.datos_test
+        
     """
         Predice en el futuro para dentro de "minutes" minutos
     """

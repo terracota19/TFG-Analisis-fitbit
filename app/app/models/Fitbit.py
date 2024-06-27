@@ -127,7 +127,8 @@ class FitbitAPI:
     def perfectDataForPrediction(self,steps):
         combined_file_path = f"app/DataAPI/{self.user_id}/test_train_data_api_merged.csv"
         data = pd.read_csv(combined_file_path)
-        
+    
+
         data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
         
         data.set_index('Time', inplace=True)
@@ -136,7 +137,7 @@ class FitbitAPI:
         datos_train = data[:-steps]
         datos_test = data[-steps:]
 
-        print(f"Fechas train: {datos_train.index.min()} --- {datos_train.index.max()} (n={len()})")
+        print(f"Fechas train: {datos_train.index.min()} --- {datos_train.index.max()} (n={len(datos_train)})")
         print(f"Fechas test: {datos_test.index.min()} --- {datos_test.index.max()} (n={len(datos_test)})")
         print(f'Número de filas con missing values (datos_train): {datos_train.isnull().any(axis=1).mean()}')
         print(f'Número de filas con missing values (datos_test): {datos_test.isnull().any(axis=1).mean()}')
@@ -374,3 +375,18 @@ class FitbitAPI:
         else:
             print(f"Error refreshing access token: {response.status_code}")
             return None, None, None, None,True 
+    
+    def get_remaining_requests(self):
+        url = f"https://api.fitbit.com/1/user/{self.user_id}/profile.json"
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            rate_limit_remaining = response.headers.get('fitbit-rate-limit-remaining')
+            return int(rate_limit_remaining) if rate_limit_remaining is not None else 0
+        else:
+            print(f"Error obteniendo el límite de peticiones: {response.status_code}")
+            return 0
+
+ 
+    

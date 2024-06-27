@@ -5,8 +5,7 @@ from app.controllers.Controller import Controller
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import threading
-import time
-import webbrowser
+import numpy as np
 
 #Exceptions
 from app.exceptions.UserRegistrationError import UserRegistrationError
@@ -281,22 +280,33 @@ class App(tk.Tk):
         valor = self.comboBox.get()
         try:
             steps = int(valor)
+            print(f"numero de steps {steps}")
+
             self.controller.fitbitAPI.perfectDataForPrediction(steps)
-            self.create_prediction_info(steps)
-        except ValueError:
+            self.create_prediction_info()
+        except ValueError as e:
+            print(f"Error: {e}") 
             self.show_error_message(self.prediction_frame, "Por favor seleccione un número de minutos dentro de las opciones dadas")
 
+
     def create_prediction_info(self):
+      
         predictions = self.controller.predictions()
         datos_reales = self.controller.datatest()
+        
+
+        predictions = predictions.values
+        datos_reales_heart_rate = datos_reales['HeartRate'].values
 
         fig, ax = plt.subplots(figsize=(5, 4))
-        
-        ax.plot(predictions)
-        ax.plot(datos_reales)
+
+        ax.plot(predictions, label='Predictions')
+
+        ax.plot(datos_reales_heart_rate, label='HeartRate Actual')
 
         ax.set_xlabel('Minutos')
         ax.set_ylabel('HeartRate')
+        ax.legend()
 
         canvas = FigureCanvasTkAgg(fig, master=self.prediction_frame)
         canvas.draw()
@@ -330,12 +340,16 @@ class App(tk.Tk):
             else:
                 dates = self.get_dates_since_last_activity(self.ult_act)
 
-            self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+            remainingRequest = self.controller.fitbitAPI.get_remaining_requests()
+            print(f"Remaining request [before] calling the data: {remainingRequest}")
+            # self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
             self.update_progress(30) 
-            self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+            # self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
             self.update_progress(75)
             self.controller.fitbitAPI.dataPreprocess()
             self.update_progress(100) 
+            remainingRequest = self.controller.fitbitAPI.get_remaining_requests()
+            print(f"Remaining request [after] calling the data: {remainingRequest}")
 
             
             self.controller.updateApi_lastUpdate()
