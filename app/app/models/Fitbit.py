@@ -2,10 +2,10 @@ import os
 import hashlib
 import base64
 import requests
-import json
 import csv
 import pandas as pd
 import numpy as np
+
 
 from datetime import datetime, timedelta, timezone
 from app.models.ML.LightGBM import LightGBM
@@ -70,8 +70,15 @@ class FitbitAPI:
                 combined_data = pd.concat([combined_data, monthly_data])
             except FileNotFoundError:
                 continue
+        
+        
+        directory = os.path.dirname(output_filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         combined_data.to_csv(output_filename, index=False)
         print(f"Los datos han sido combinados y guardados en '{output_filename}'.")
+
 
 
 
