@@ -280,13 +280,18 @@ class App(tk.Tk):
         valor = self.comboBox.get()
         try:
             steps = int(valor)
-            print(f"numero de steps {steps}")
+            threading.Thread(target=self.run_prediction, args=(steps,)).start()
 
+        except ValueError as e:
+            self.show_error_message(self.prediction_frame, "Por favor seleccione un número de minutos dentro de las opciones dadas")
+
+    def run_prediction(self, steps):
+        try:
             self.controller.fitbitAPI.perfectDataForPrediction(steps)
             self.create_prediction_info()
-        except ValueError as e:
-            print(f"Error: {e}") 
-            self.show_error_message(self.prediction_frame, "Por favor seleccione un número de minutos dentro de las opciones dadas")
+        except Exception as e:
+            print(e)
+            self.show_error_message(self.prediction_frame, "Error al realizar la predicción. Inténtalo de nuevo más tarde.")
 
 
     def create_prediction_info(self):
