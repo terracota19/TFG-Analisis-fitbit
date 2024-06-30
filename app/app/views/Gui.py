@@ -6,6 +6,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import threading
 import numpy as np
+import matplotlib.dates as mdates
+import pandas as pd
+from matplotlib.figure import Figure
 
 #Exceptions
 from app.exceptions.UserRegistrationError import UserRegistrationError
@@ -275,47 +278,85 @@ class App(tk.Tk):
         self.create_button(self.prediction_frame, "Sincronizar", self.update_status)
 
         self.create_button(self.prediction_frame, "Predecir Ahora", self.predict)
-        
+
+
+
     def predict(self):
         valor = self.comboBox.get()
-        try:
-            steps = int(valor)
-            threading.Thread(target=self.run_prediction, args=(steps,)).start()
+        # try:
+        steps = int(valor)
+        self.run_prediction(steps)
+        # threading.Thread(target=self.run_prediction, args=(steps,)).start()
 
-        except ValueError as e:
-            self.show_error_message(self.prediction_frame, "Por favor seleccione un número de minutos dentro de las opciones dadas")
+        # except ValueError as e:
+            # self.show_error_message(self.prediction_frame, "Por favor seleccione un número de minutos dentro de las opciones dadas")
 
     def run_prediction(self, steps):
-        try:
-            self.controller.fitbitAPI.perfectDataForPrediction(steps)
-            self.create_prediction_info()
-        except Exception as e:
-            print(e)
-            self.show_error_message(self.prediction_frame, "Error al realizar la predicción. Inténtalo de nuevo más tarde.")
+            
+        self.controller.fitbitAPI.perfectDataForPrediction(steps)
+        self.create_prediction_info()
+        #except Exception as e:
+            #print(e)
+           #self.show_error_message(self.prediction_frame, "Error al realizar la predicción. Inténtalo de nuevo más tarde.")
+    
+    def graficar_predicciones(datos_test, predicciones_dict, future_index, steps):
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-
-    def create_prediction_info(self):
-      
-        predictions = self.controller.predictions()
-        datos_reales = self.controller.datatest()
+        datos_test_last = datos_test.iloc[-steps:]
         
+        ax.plot(datos_test_last.index, datos_test_last['HeartRate'], label='Datos Reales', color='black', linewidth=2)
 
-        predictions = predictions.values
-        datos_reales_heart_rate = datos_reales['HeartRate'].values
+        
+        for (nombre_modelo, step, lag), predicciones in predicciones_dict.items():
+            
+            predicciones_aligned = pd.Series(predicciones.values, index=future_index)
+            ax.plot(predicciones_aligned.index, predicciones_aligned, label=f'{nombre_modelo} (step={step}, lag={lag})')
 
-        fig, ax = plt.subplots(figsize=(5, 4))
-
-        ax.plot(predictions, label='Predictions')
-
-        ax.plot(datos_reales_heart_rate, label='HeartRate Actual')
-
-        ax.set_xlabel('Minutos')
+        
+        ax.set_xlabel('Tiempo')
         ax.set_ylabel('HeartRate')
         ax.legend()
+        plt.xticks(rotation=45)
+        
+        ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=1))
+        ax.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%H:%M'))
+        fig.autofmt_xdate()
+        
+        plt.show()
+
+    def create_prediction_info(self):
+
+        predictions = self.controller.predictions()
+        datos_reales = self.controller.datosReales()
+        
+        print(f"Print de predictions en el método [create_prediction_info]: \n {predictions}")
+        print(f"Print de datos_reales en el método [create_prediction_info]: \n {datos_reales}")
+        
+        self.graphPredictions(datos_reales, predictions)
+       
+
+    def graphPredictions(self, datos_reales, predictions):
+        fig = Figure(figsize=(8, 4))
+        ax = fig.add_subplot(111)
+
+        ax.plot(datos_reales.index, datos_reales, label='Datos Reales', marker='o')
+        ax.plot(predictions.index, predictions, label='Predicciones', linestyle='--', marker='x')
+
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+        ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+        ax.xaxis.set_minor_locator(mdates.MinuteLocator(interval=1))
+
+        fig.autofmt_xdate()
+
+        ax.set_xlabel('Tiempo')
+        ax.set_ylabel('HeartRate')
+        ax.set_title('Predicciones')
+        ax.legend()
+        ax.grid(True)
 
         canvas = FigureCanvasTkAgg(fig, master=self.prediction_frame)
         canvas.draw()
-        canvas.get_tk_widget().place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        canvas.get_tk_widget().pack()
 
     def update_status(self):
         
@@ -347,9 +388,9 @@ class App(tk.Tk):
 
             remainingRequest = self.controller.fitbitAPI.get_remaining_requests()
             print(f"Remaining request [before] calling the data: {remainingRequest}")
-            # self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+            self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
             self.update_progress(30) 
-            # self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+            self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
             self.update_progress(75)
             self.controller.fitbitAPI.dataPreprocess()
             self.update_progress(100) 

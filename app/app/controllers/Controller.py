@@ -31,9 +31,9 @@ class Controller:
         self.login_frame = None 
     
         """API Fitbit"""
-        # https://dev.fitbit.com/apps
-        self.fitbitAPI = FitbitAPI("23RY6J","74cfc7ed3a2a070ecfd1139ac9366b17", self.mongo)
-        #self.fitbitAPI = FitbitAPI("23RFGM","4f602285fd2df734b04fe7d26a6680d7", self.mongo)
+     
+        #self.fitbitAPI = FitbitAPI("23RY6J","74cfc7ed3a2a070ecfd1139ac9366b17", self.mongo)
+        self.fitbitAPI = FitbitAPI("23RFGM","4f602285fd2df734b04fe7d26a6680d7", self.mongo)
     
         """OAuthServer""" 
         self.oauth_server = OAuthServer(self.fitbitAPI)
@@ -48,8 +48,8 @@ class Controller:
         return re.match(email_regex, email)
         
     
-    def datatest(self):
-        return self.fitbitAPI.datatest()
+    def datosReales(self):
+        return self.fitbitAPI.datosReales()
 
     def checkLasUpdate(self):
         user_id = self.logged_in_user.get("_id")

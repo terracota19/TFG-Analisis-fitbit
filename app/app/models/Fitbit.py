@@ -9,7 +9,7 @@ import numpy as np
 
 from datetime import datetime, timedelta, timezone
 from app.models.ML.LightGBM import LightGBM
-
+from app.models.ML.XGBoost import XGBoost
 
 
 class FitbitAPI:
@@ -37,14 +37,18 @@ class FitbitAPI:
 
         """LightGBM ML model"""
         self.light = LightGBM()
+        
+        """XGBoost"""
+        self.boost = XGBoost()
 
 
     def predictions(self):
-        return self.light.predictions()
+        return self.boost.predictions()
     
     
-    def datatest(self):
-        return self.light.datatest()
+    
+    def datosReales(self):
+        return self.boost.datosReales()
         
     def storeFibitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
         
@@ -136,25 +140,47 @@ class FitbitAPI:
         data = pd.read_csv(combined_file_path)
     
 
-        data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
+        #data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
+        data['Time'] = pd.to_datetime(data['Time'])
+
+        data.set_index('Time', inplace=True)      
         
-        data.set_index('Time', inplace=True)
-        data = data.asfreq('60s').sort_index()
+        #data = data.asfreq('60s').sort_index()
+        data = data.asfreq('T')
 
-        datos_train = data[:-steps]
-        datos_test = data[-steps:]
+        last_time = data.index[-1]
+        # Excluimos el último indice de data
+        future_index = pd.date_range(start=last_time, periods= steps + 1, freq='T')[1:]
+        
+        last_calories = data['Calories'].iloc[-1]
+        last_steps = data['Steps'].iloc[-1]
+        last_distance = data['Distance'].iloc[-1]
 
-        print(f"Fechas train: {datos_train.index.min()} --- {datos_train.index.max()} (n={len(datos_train)})")
-        print(f"Fechas test: {datos_test.index.min()} --- {datos_test.index.max()} (n={len(datos_test)})")
-        print(f'Número de filas con missing values (datos_train): {datos_train.isnull().any(axis=1).mean()}')
-        print(f'Número de filas con missing values (datos_test): {datos_test.isnull().any(axis=1).mean()}')
+        future_exog = pd.DataFrame({
+            'Calories': [last_calories] * len(future_index),
+            'Steps': [last_steps] * len(future_index),
+            'Distance': [last_distance] * len(future_index)
+        }, index=future_index)
 
-        datos_train.bfill(inplace=True)
-        datos_test.bfill(inplace=True)
 
-        print("Entrenando al modelo con LightGBM...\n")
-        self.light.fitLight(datos_train, datos_test, steps)
-        print("Ha finalizado el entrenamiento del modelo con LightGBM...\n")
+        datos_train = data.iloc[:] 
+        datos_train = datos_train.bfill()
+
+        # datos_train = data[:-steps]
+        # datos_test = data[-steps:]
+        # datos_train = datos_train.bfill()
+        # datos_test = datos_test.bfill()
+
+        #print(f"Fechas train: {datos_train.index.min()} --- {datos_train.index.max()} (n={len(datos_train)})")
+        #print(f"Fechas test: {datos_test.index.min()} --- {datos_test.index.max()} (n={len(datos_test)})")
+        #print(f'Número de filas con missing values (datos_train): {datos_train.isnull().any(axis=1).mean()}')
+        #print(f'Número de filas con missing values (datos_test): {datos_test.isnull().any(axis=1).mean()}')
+
+
+        
+        self.boost.fitXGBoost(datos_train, future_exog, steps)
+
+    
 
 
     
