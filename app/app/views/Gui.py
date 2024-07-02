@@ -31,13 +31,16 @@ class App(tk.Tk):
         self.authorize_fitbit_button = None
         self.update_label = None
         self.current_prediction_canvas = None
-
-        self.setup_ui()
-
         self.register_frame = None
         self.prediction_frame = None
         self.progress_var = tk.DoubleVar()
 
+        """Main method to setup HeartPred'it UI """
+        self.setup_ui()
+
+    """
+        Creates all elements for HeartPred'it UI
+    """
     def setup_ui(self):
         self.login_auth_frame = tk.Frame(self, bg="white")
         self.login_auth_frame.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
@@ -47,6 +50,7 @@ class App(tk.Tk):
       
         self.controller.set_login_frame(self.login_frame)
 
+    """Create Login Frame where login elements such as email and password entries"""
     def create_login_frame(self):
         self.login_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.login_frame, text="Inicio de Sesión")
@@ -56,18 +60,21 @@ class App(tk.Tk):
         self.create_register_link(self.login_frame)
         self.create_button(self.login_frame, "Inicio de Sesión", self.on_login_click)
 
+    """Creates Label to insert into 'frame' frame with 'text' = text and 'size' = size """
     def create_label(self, frame, text, size, fg="white", bg="#457EAC"):
         label = tk.Label(frame, text=text, font=("arial", size), fg=fg, bg=bg)
         label.pack(pady=5, padx=20, fill=tk.X)
         return label
 
+    """Creates Tkinter entry on 'frame' = frame with 'text' = text and show attribute """
     def create_entry(self, frame, text, show, attr_name):
         tk.Label(frame, text=text, pady=2, fg="white", bg="#457EAC", font=('arial', 14)).pack(anchor='w', padx=20, pady=(20, 0))
         entry = tk.Entry(frame, show="*" if show else "")
         entry.pack(fill=tk.X, padx=20, pady=5)
         setattr(self, attr_name, entry)
         return entry
-
+    
+    """Creates register link on 'frame' = frame"""
     def create_register_link(self, frame):
         container = tk.Frame(frame, bg="#457EAC")
         container.pack(pady=10, padx=20, fill=tk.X)
@@ -75,7 +82,8 @@ class App(tk.Tk):
         register_label.pack(pady=2)
         register_label.bind("<Button-1>", self.on_register_click)
         return register_label
-
+    
+    """Logic for selecting Login Frame"""
     def select_login_frame(self):
         for tab_id in self.notebook.tabs():
             tab_name = self.notebook.tab(tab_id, "text")
@@ -83,6 +91,7 @@ class App(tk.Tk):
                 self.notebook.select(tab_id)
                 break 
 
+    """Creates a Tkinter Button into 'frame' = frame with 'text' = text executing when clicked 'command' method """
     def create_button(self, frame, text, command, state="normal", label_var=None):
         container = tk.Frame(frame, bg="#457EAC")
         container.pack(pady=2)
@@ -92,12 +101,14 @@ class App(tk.Tk):
             label = tk.Label(container, textvariable=label_var, fg="green", bg="#457EAC")
             label.pack(side=tk.LEFT, pady=5)
         return button
-
+    
+    """Executes command method related to a tKinter button"""
     def button_click(self, command, label_var):
         command()
         if label_var is not None:
             label_var.set("✓")
 
+    """Command that implements login in"""
     def on_login_click(self):
 
         try:
@@ -118,11 +129,13 @@ class App(tk.Tk):
         else:
             self.show_error_message(self.login_frame, "Ups...! Inicio de sesión fallido!")
 
+    """Show into 'frame' = frame 'text' error"""
     def show_error_message(self, frame, text):
         error_label = tk.Label(frame, text=text, font=("arial", 15), fg="red")
         error_label.pack(pady=5, padx=20, fill=tk.X)
         self.after(2000, error_label.pack_forget)
 
+    """Creates App notebook"""
     def create_app_notebook(self):
         self.app_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.app_frame, text="HeartPred'it")
@@ -138,7 +151,9 @@ class App(tk.Tk):
 
         self.create_welcome_label(self.app_frame)
 
+    """Logic for user account delete"""
     def deleteUserAccount(self):
+        """Logic for confirm user delete account"""
         def confirm_deletion():
             self.controller.deleteUserAccount()
             confirm_popup.destroy()
@@ -146,9 +161,6 @@ class App(tk.Tk):
             for tab_id in self.notebook.tabs():
                 self.notebook.forget(tab_id)
             self.create_login_frame()
-
-
-            
 
 
         confirm_popup = tk.Toplevel(self.app_frame)
@@ -167,7 +179,8 @@ class App(tk.Tk):
 
         cancel_button = tk.Button(button_frame, text="Atrás", fg="white", bg="#457EAC", command=confirm_popup.destroy)
         cancel_button.pack(side=tk.RIGHT, padx=10)
-
+    
+    """Logic for user logOut"""
     def logout(self):
         self.controller.logout()
         for tab_id in self.notebook.tabs():
@@ -176,13 +189,14 @@ class App(tk.Tk):
         self.create_login_frame()
 
        
-    
+    """Creates Welcome label into 'frame' = frame"""
     def create_welcome_label(self, frame):
         user_info = self.controller.user_info()
         if user_info:
             self.create_label(frame, f"¡Bienvenido, {user_info}!", 20)
             self.create_status_frame(frame)
-
+    
+    """Creates status frame"""
     def create_status_frame(self, frame):
         self.status_frame = tk.Frame(frame, bg="#457EAC")
         self.status_frame.pack(pady=10, padx=20, fill=tk.X)
@@ -204,12 +218,13 @@ class App(tk.Tk):
             return False
 
 
-
+    """Logic for register click event"""
     def on_register_click(self, event):
         if self.register_frame is None:
             self.create_register_frame()
         self.notebook.select(self.register_frame)
 
+    """Logic for creation of register frame"""
     def create_register_frame(self):
         self.register_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.register_frame, text="Registro")
@@ -223,6 +238,7 @@ class App(tk.Tk):
         self.authorize_fitbit_button = self.create_button(self.register_frame, "Paso 1: Autorizar con Fitbit", self.authorize_with_fitbit, label_var=self.authorize_label_var)
         self.register_button = self.create_button(self.register_frame, "Paso 2: Registrarse", self.on_register_submit, state="disabled")
 
+    """Logic for user register submit"""
     def on_register_submit(self):
         user = self.register_user_entry.get()
         email = self.register_email_entry.get()
@@ -249,6 +265,7 @@ class App(tk.Tk):
             self.notebook.forget(self.register_frame)
             self.show_error_message(self.login_frame, e.getMessage())
 
+    """Logic for user prediction"""
     def on_predict_submit(self):
 
         self.ult_act = self.controller.checkLasUpdate()
@@ -259,7 +276,7 @@ class App(tk.Tk):
         else:
            self.show_error_message(self.status_frame, "Sincroniza antes de intentar predecir. Estado de Sincronización: Nunca")
 
-
+    """Logic for prediction frame creation"""
     def create_prediction_frame(self):
         self.prediction_frame = tk.Frame(self.notebook, bg="#457EAC")
         self.notebook.add(self.prediction_frame, text="Predicción")
@@ -284,19 +301,19 @@ class App(tk.Tk):
         self.prediction_graph_frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
 
 
-
+    """Logic for prediction with ML models"""
     def predict(self):
         valor = self.comboBox.get()
         steps = int(valor)
         threading.Thread(target=self.run_prediction(steps,)).start()
     
-
+    """Logic for predictions with ML models with selected number of minutes = steps"""
     def run_prediction(self, steps):
             
         self.controller.fitbitAPI.perfectDataForPrediction(steps)
         self.create_prediction_info()
        
-
+    """Logic for resulted prediction graph"""
     def create_prediction_info(self):
 
         predictions = self.controller.predictions()
@@ -304,7 +321,7 @@ class App(tk.Tk):
         
         self.graphPredictions(datos_reales, predictions)
        
-
+    """Creation of Predictions graph"""
     def graphPredictions(self, datos_reales, predictions):
         if self.current_prediction_canvas:
             self.current_prediction_canvas.get_tk_widget().destroy()
@@ -329,7 +346,8 @@ class App(tk.Tk):
         canvas.get_tk_widget().pack()
 
         self.current_prediction_canvas = canvas
-
+    
+    """Logic for updating/syncronized with latest user data"""
     def update_status(self):
         
         self.progress_popup = tk.Toplevel(self)
@@ -344,14 +362,12 @@ class App(tk.Tk):
 
         threading.Thread(target=self.run_update_status_with_progress).start()
 
-
+    """Logic for running on thread update/syncronize logic"""
     def run_update_status_with_progress(self):
         try:
             self.update_progress(2) 
             self.ult_act = self.controller.checkLasUpdate() 
             self.update_progress(25)
-
-        
 
             if not self.ult_act:
                 dates = self.get_last_30_days()
@@ -380,21 +396,27 @@ class App(tk.Tk):
         finally:
             self.progress_popup.destroy()
 
+
+    """Logic for updating progress syncroniz bar"""
     def update_progress(self, value):
         self.progress_bar['value'] = value
         self.progress_popup.update_idletasks()
 
+    """Logic for get last 30 day from actual date"""
     def get_last_30_days(self):
         today = datetime.today()
         start_date = today - timedelta(days=30)
         return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(31)]
    
+    """Logic for getting days passed since last updated/syncronize"""
     def get_dates_since_last_activity(self, ult_act):
         last_activity_date = ult_act  
         today = datetime.today()
         days_diff = (today - last_activity_date).days
         return [(last_activity_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(days_diff + 1)]
     
+
+    """Logic for creation of ReAuthoritazion PopUp with FitBit"""
     def reauthorizationPopup(self):
         
         self.popup = tk.Toplevel(self)
@@ -406,7 +428,8 @@ class App(tk.Tk):
 
         reauthorize_button = tk.Button(self.popup, text="Re-autorizar", command=self.authorize_with_fitbit)
         reauthorize_button.pack(pady=10)
-        
+    
+    """Logic for user authorize with FitBit"""
     def authorize_with_fitbit(self):
         try :    
 
@@ -428,7 +451,7 @@ class App(tk.Tk):
             self.show_error_message(self.register_frame, e.getMessage())
             return False      
         
-    
+    """Logic for user authorize with FitBit"""
     def authoritize(self, user, email, password, age):
         self.is_authorized = self.controller.authorize_with_fitbit(user, email, password, age)
 
@@ -441,8 +464,3 @@ class App(tk.Tk):
                 self.register_button.config(state="normal")
 
         
-           
-
-        
-
-       
