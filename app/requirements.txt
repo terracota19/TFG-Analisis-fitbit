@@ -9,3 +9,4 @@ dask[dataframe]
 pandas
 numpy
 scikit-learn
+xgboost
