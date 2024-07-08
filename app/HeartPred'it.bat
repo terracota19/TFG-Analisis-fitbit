@@ -1,28 +1,28 @@
 @echo off
 
-REM Configurar variables
+REM 
 SET MONGO_PATH="C:\Program Files\MongoDB\Server\7.0\bin\mongod.exe"
 SET DB_PATH="C:\hlocal\datos"
 
-REM Verificar si el directorio DB_PATH existe, si no, crearlo
+REM 
 IF NOT EXIST %DB_PATH% (
     echo Creating directory %DB_PATH%...
     mkdir %DB_PATH%
 )
 
-REM Verificar si pip está instalado
+REM 
 python -m pip --version
 IF %ERRORLEVEL% NEQ 0 (
     echo Installing pip...
     python -m ensurepip --default-pip
 )
 
-REM Instalar dependencias desde requirements.txt
+REM
 echo Installing dependencies...
 pip install -r requirements.txt
 
-REM Iniciar MongoDB en segundo plano
+REM 
 start "" /B %MONGO_PATH% --dbpath %DB_PATH%
 
-REM Ejecutar la app de Python
+REM 
 start "" "python.exe" "main.py"
