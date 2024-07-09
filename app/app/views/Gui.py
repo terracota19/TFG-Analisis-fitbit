@@ -354,8 +354,7 @@ class App(tk.Tk):
         self.ult_act = self.controller.last_update()
         
         if self.ult_act != "Nunca":
-            if self.prediction_frame is None:
-                self.create_prediction_frame()
+            self.create_prediction_frame()
             self.notebook.select(self.prediction_frame)
         else:
            self.show_error_message(self.status_frame, "Sincroniza antes de intentar predecir. Estado de Sincronización: Nunca")
@@ -385,7 +384,8 @@ class App(tk.Tk):
         try:
 
             steps = int(self.comboBox.get())
-            threading.Thread(target=self.run_thread_prediction(steps,)).start()
+            
+            threading.Thread(target=self.run_thread_prediction, args=(steps,)).start()
         except ValueError :
             self.show_error_message(self.prediction_frame, "¡Selecciona un número de minutos antes de predecir!")
 
@@ -401,8 +401,10 @@ class App(tk.Tk):
         try:
             self.controller.fitbitAPI.perfectDataForPrediction(steps)
             self.create_prediction_info()
+            
         except PredictionError as e :
             self.show_error_message(self.prediction_frame, e)
+
     """Logic for resulted prediction graph"""
     def create_prediction_info(self):
 
@@ -472,12 +474,12 @@ class App(tk.Tk):
                 dates = self.get_dates_since_last_activity(ultimaAct)
 
             try:
-                ultimaAct = self.controller.lastFitBitDataUpdate()
                 self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
                 self.update_progress(30) 
                 self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
                 self.update_progress(75)
                 self.controller.fitbitAPI.dataPreprocess()
+                ultimaAct = self.controller.lastFitBitDataUpdate()
                 self.update_progress(100) 
                                 
                 self.controller.updateApiLastUpdate(ultimaAct)

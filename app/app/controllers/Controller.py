@@ -37,8 +37,8 @@ class Controller:
         javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
         javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
 
-        #self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
-        self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
+        self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
+        #self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
     
         """OAuthServer""" 
         self.oauth_server = OAuthServer(self.fitbitAPI)

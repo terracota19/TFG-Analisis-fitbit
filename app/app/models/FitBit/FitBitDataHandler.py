@@ -146,10 +146,15 @@ class FitBitDataHandler :
         if len(data) > 1:
            
             data['Time'] = pd.to_datetime(data['Time'])
-            data.set_index('Time', inplace=True)      
+            data.set_index('Time', inplace=True)  
+             
+            # This removes possibles duplicated index rows
+            data = data[~data.index.duplicated(keep='first')]
+               
             data = data.asfreq('min')
+            
             last_time = data.index[-1]
-        
+
             future_index = pd.date_range(start=last_time, periods= steps + 1, freq='min')[1:]
             
             last_calories = data['Calories'].iloc[-1]
