@@ -24,4 +24,7 @@ if __name__ == "__main__":
     """
     app.protocol("WM_DELETE_WINDOW", on_close)
 
+    """
+        Main HeartPred'it Loop
+    """
     app.mainloop()
