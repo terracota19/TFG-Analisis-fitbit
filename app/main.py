@@ -18,6 +18,7 @@ if __name__ == "__main__":
         app.controller.oauth_server.stop_server()
 
         app.destroy()
+        
     """
         Associate closing app window with on_close logic.
     """
