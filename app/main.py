@@ -1,6 +1,7 @@
 from app.views.Gui import App
 
 if __name__ == "__main__":
+    
     """
         App HeartPred'it instance.
     """
