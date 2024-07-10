@@ -11,10 +11,7 @@ if __name__ == "__main__":
     """
     def on_close():
         
-        #Cerramos la conexion con mongo, ya que no se va a utilizar 
         app.controller.mongo.close_connection()
-        
-        #Paramos el servidor porque ya no se va a utilizar
         app.controller.oauth_server.stop_server()
 
         app.destroy()
