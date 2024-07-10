@@ -1,9 +1,14 @@
 from app.views.Gui import App
 
 if __name__ == "__main__":
-    
+    """
+        App HeartPred'it instance
+    """
     app = App()
-
+    
+    """
+        Logic for closing mongoDB client conection and stop localhost OAuthServer on port 5000 and destroy app HeartPred'it
+    """
     def on_close():
         
         #Cerramos la conexion con mongo, ya que no se va a utilizar 
