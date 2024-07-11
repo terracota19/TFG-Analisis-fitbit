@@ -315,7 +315,7 @@ class FitBitDataHandler :
         -detail_level (str) : 1min
         -start_time (str) : Normally 00:00
         -end_time (str) : Normally 23:59
-        -dates (list) : List with the days where data will be fetch e.g [2024-07-01,2024-07-02...etc]
+        -dates (list) : List with the days where data will be fetch e.g [2024-07-01, 2024-07-02...etc]
     
     """
     def getCaloriesDistanceStepsData(self, detail_level, start_time, end_time, dates,access_token, user_id):
@@ -331,8 +331,12 @@ class FitBitDataHandler :
         Get remainig request for user logged in.
         Maximun request per user per hour is 150.
 
+        Parameters:
+        -access_token (str) : User Access token.
+        -user_id (str) : User Fitbit id.
+        
         Returns:
-        -Remaining request (int)
+        -Remaining User Fitbit API request (int)
     """   
     def get_remaining_requests(self, access_token, user_id):
 
