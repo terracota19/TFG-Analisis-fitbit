@@ -299,6 +299,9 @@ class FitBitDataHandler :
     """
         Creates specified 'output_filename' directory if not exists.
 
+        Parameters:
+        -output_filename (str) : The output_filename directory.
+
     """
     def createDirectory(self, output_filename):
         directory = os.path.dirname(output_filename)
