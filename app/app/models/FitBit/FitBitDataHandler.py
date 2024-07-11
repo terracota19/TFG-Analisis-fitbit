@@ -48,6 +48,9 @@ class FitBitDataHandler :
     
     """
         Combines all calories,distance, heartRate, steps merged csv into final csv 'test_train_data_api_merged.csv'
+
+        Parameters:
+        -user_id (str) : User Fitbit Id.
     """
     def dataPreprocess(self, user_id):
     
@@ -90,6 +93,9 @@ class FitBitDataHandler :
 
     """
         Converts [`Time'] from test_train_data_api_merged['Time'] & test_train_data_api_merged['Date'] into DateTime 
+
+        Parameters:
+        -datos_combinados_final (csv) : Data to be parsed.
 
         Returns:
         - csv : Converted data['Time'] & data['Date'] into one DateTime column data['Time].
