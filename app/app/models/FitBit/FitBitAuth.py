@@ -144,7 +144,6 @@ class FitBitAuth:
         Checks whether token is expirede and needed ReAuth from client
 
         Parameters:
-    
         -access_token (str) : Contains the user last access token.
         -expires_in (datetime) : Contains in DateTime object when the access_token expires at.
         
