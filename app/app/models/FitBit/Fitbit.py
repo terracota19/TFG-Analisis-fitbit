@@ -112,6 +112,7 @@ class FitbitAPI:
     """    
     def combine_monthly_data(self, base_filename, output_filename):
        return self.dataHandler.combine_monthly_data(base_filename, output_filename, self.user_id)
+        
     """
         Checks whether access_token provided is expired or not.
 
@@ -131,6 +132,9 @@ class FitbitAPI:
     """
         Converts [`Time'] from test_train_data_api_merged['Time'] & test_train_data_api_merged['Date'] into DateTime 
 
+        Parameters:
+        -datos_combinados_final (csv) : Final data that will be passed to train ML model.
+        
         Returns:
         - csv : Converted data['Time'] & data['Date'] into one DateTime column data['Time].
     """
@@ -141,6 +145,9 @@ class FitbitAPI:
     """
         Prepares data for model prediction requirements, such as non-Nan values on dataset
         and train XGboost model.
+
+        Parameters:
+        -steps (int) : Number of minutes to predict into future.
         
     """
     def perfectDataForPrediction(self,steps):  
@@ -175,6 +182,13 @@ class FitbitAPI:
            
     """
         Stores Fitbit Tokens and other info onto MongoDB user account
+
+        Parameters:
+        -access_token (str) :  provided User access_token.
+        -refresh_token (str) :  provided User refresh_token.
+        -expires_in (Datetime) : provided User expires date.
+        -user_id (str) : Fitbit User id. 
+        
     """
     def storeMongoTokens(self, access_token, refresh_token, expires_in, user_id):
         
