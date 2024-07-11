@@ -27,10 +27,8 @@ class FitbitAPI:
         """URL for OAuthClient with Fitbit"""
         self.authentification_url = self.generate_authorization_url()
 
-
         """XGBoost"""
         self.boost = XGBoost()
-
 
         """LightGBM ML model"""
         self.light = LightGBM()
@@ -73,6 +71,12 @@ class FitbitAPI:
 
     """
         Store FitBit info access, refresh tokens and other info
+
+        Parameters:
+        -new_access_token (str) : New provided User access_token.
+        -new_refresh_token (str) : New provided User refresh_token.
+        -new_expires_in (Datetime) : New provided User expires date.
+        -user_id (str) : Fitbit User id. 
     
     """
     def storeFibitInfo(self, new_access_token, new_refresh_token, new_expires_in, user_id):
@@ -85,7 +89,10 @@ class FitbitAPI:
         self.storeMongoTokens(self.access_token, self.refresh_token, self.expires_in, self.user_id)
 
     """
-        Method to copy new expires_in value from new access,refresh tokens
+        Method to copy new expires_in value from new access,refresh tokens.
+
+        Parameters:
+        -new_expires_in (Datetime) : datetime when access_token expires in.
     """
     def setExpiresIn(self, new_expires_in):
         if isinstance(new_expires_in, datetime):
@@ -95,10 +102,22 @@ class FitbitAPI:
 
     """
         Combines all 'base_filename' existing csv`s from January to December into one csv 
+
+        Parameters:
+        -base_filename (str) : Name of data to be read.
+        -output_filename (str) : Name of data to be written.
+
+        Returns:
+        -base_filename combined from January to December into one output_filename.
     """    
     def combine_monthly_data(self, base_filename, output_filename):
        return self.dataHandler.combine_monthly_data(base_filename, output_filename, self.user_id)
+    """
+        Checks whether access_token provided is expired or not.
 
+        Returns:
+        -False if expires_in > datetime.today().utc, True otherwise. 
+    """
     def access_token_is_expired(self, access_token, expires_in):
         return self.auth.access_token_is_expired(access_token, expires_in)
 
