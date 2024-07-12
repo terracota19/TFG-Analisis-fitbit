@@ -98,7 +98,7 @@ class Controller:
         Validates whether 'value' is a numeric instance
 
         Parameters:
-        -s (string) : Input String.
+        -value (int) : Input Integer.
 
         Returns:
         - (boolean) : True if  'value' is a numeric instance: False otherwise
