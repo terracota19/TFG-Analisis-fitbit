@@ -8,7 +8,7 @@ if __name__ == "__main__":
     app = App()
     
     """
-        Logic for closing mongoDB client conection and stop localhost OAuthServer on port 5000 and destroy app HeartPred'it.
+        Logic for closing mongoDB client conection, stop localhost OAuthServer on port 5000 and destroy app HeartPred'it.
     """
     def on_close():
         
