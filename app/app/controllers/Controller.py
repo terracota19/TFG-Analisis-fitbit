@@ -56,7 +56,7 @@ class Controller:
         -email (str) : String that contains user register email.
 
         Returns:
-        - (boolean) : True when is valid or not. False otherwise.
+        - (boolean) : True when is valid, example (example@gmal.com) . False otherwise.
     """
     def validate_email(self, email):
         email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -113,7 +113,7 @@ class Controller:
         -input_string (str) : Input String to be sanatized.
 
         Returns:
-        - (str) : The  sanatized string without potentially harmaful caracters.
+        - (str) : The sanatized string without potentially harmaful caracters.
 
         Example:
         Non Sanatized : <script>alert('XSS');</script>
@@ -186,6 +186,9 @@ class Controller:
     """
         Fetches user data identified with unique email from mongoDB and stores it into Fitbit instance.
 
+        Parameters:
+        -email (str) : User HeartPred'it email.
+        
         Returns:
         - True if user data was not found.
     """
@@ -391,7 +394,7 @@ class Controller:
         Logic that checks whether user need ReAuth OAuth2.0 process, because access_token expired.
 
         Parameters:
-        - user_data (json) : User data.
+        - user_data (json) : User HeartPre'it data.
     """
     def checkReAuth(self, user_data):
         if self.fitbitAPI.checkRefreshToken(user_data.get("fitbit")):
