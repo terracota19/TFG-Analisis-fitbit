@@ -17,7 +17,10 @@ class BaseForecaster :
         
         """Forecaster AutoReg"""
         self.forecaster = None 
-        
+    
+    """
+        Getter for HearRate User Data.
+    """
     def datosReales(self):
         return self.datos_train['HeartRate'][-self.steps:]
         
