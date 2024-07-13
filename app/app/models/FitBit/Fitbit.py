@@ -46,6 +46,9 @@ class FitbitAPI:
     
     """
         Getter fot user Fitbit Tokens info
+
+        Returns:
+        -access_token, refresh_token, expires_in, user_id
     """
     def getTokens(self):
         return self.access_token, self.refresh_token, self.expires_in, self.user_id
