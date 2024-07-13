@@ -4,6 +4,7 @@ from flask import Flask, request
 
 class OAuthServer:
     def __init__(self, fitAPI):
+        
         """OAuthServer Flask app"""
         self.app = Flask(__name__)
         self.app.route('/')(self.home)
