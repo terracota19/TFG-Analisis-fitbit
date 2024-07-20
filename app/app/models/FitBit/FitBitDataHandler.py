@@ -12,6 +12,9 @@ class FitBitDataHandler :
     def __init__(self):
         super().__init__()
 
+        """Headers"""
+        self.variables = ['HeartRate','Calories','Steps','Distance']
+        
         """Timedeltas"""
         self. time_deltas = {
                         "1 día": pd.Timedelta(days=1),
@@ -213,8 +216,7 @@ class FitBitDataHandler :
              and CSV with random Exog variables['Calories', 'Distance','Steps'] for model to use 
     
     """
-    def perfectDataForPrediction(self,steps, user_id):
-
+    def perfectDataForPrediction(self, steps, data_pred_title, user_id):
 
         combined_file_path = f"app/DataAPI/{user_id}/test_train_data_api_merged.csv"
         self.createDirectory(combined_file_path)
@@ -224,26 +226,24 @@ class FitBitDataHandler :
            
             data['Time'] = pd.to_datetime(data['Time'])
             data.set_index('Time', inplace=True)  
-             
-            # This removes possibles duplicated index rows
             data = data[~data.index.duplicated(keep='first')]
-               
             data = data.asfreq('min')
-            
             last_time = data.index[-1]
-
             future_index = pd.date_range(start=last_time, periods= steps + 1, freq='min')[1:]
             
-            last_calories = data['Calories'].iloc[-1]
-            last_steps = data['Steps'].iloc[-1]
-            last_distance = data['Distance'].iloc[-1]
-
+            last_values = {
+            'HeartRate': data['HeartRate'].iloc[-1],
+            'Calories': data['Calories'].iloc[-1],
+            'Steps': data['Steps'].iloc[-1],
+            'Distance': data['Distance'].iloc[-1]
+            }   
+            
             future_exog = pd.DataFrame({
-                'Calories': [last_calories] * len(future_index),
-                'Steps': [last_steps] * len(future_index),
-                'Distance': [last_distance] * len(future_index)
+                col: [last_value] * len(future_index)
+                for col, last_value in last_values.items() if col != data_pred_title
             }, index=future_index)
 
+            print(f"future_exog in method: perfectDataForPrediction:\n{future_exog}")
             datos_train = data.iloc[:] 
             datos_train = datos_train.bfill()
 
@@ -329,14 +329,14 @@ class FitBitDataHandler :
         base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/"
         all_heart_data =  self.fetchData(base_url, detail_level, start_time, end_time, dates, access_token)
 
-        self.storeUserBaseHeartRate(all_heart_data)
+        # self.storeUserBaseHeartRate(all_heart_data)
 
         self.store_HeartRate_csv(all_heart_data,
                                  csv_filename=f"app/DataAPI/{user_id}/heart_rate_data_{datetime.today().month}.csv" ,
                                  csv_headers= ['Id', 'Date', 'Time', 'HeartRate'], user_id=user_id)
     
-    def storeUserBaseHeartRate(self,all_heart_rate):
-            self.mongo.storeBaseHeartRate()
+    # def storeUserBaseHeartRate(self,all_heart_rate):
+    #         self.mongo.storeBaseHeartRate()
             
 
     """

@@ -1,5 +1,6 @@
 #imports
 import time
+import calendar
 import threading
 import tkinter as tk
 import pandas as pd
@@ -40,7 +41,8 @@ class App(tk.Tk):
         self.current_prediction_canvas = None
         self.current_data_canvas = None
         self.welcome_label = None
-        
+        self.prediction_data_title = None
+        self.data_pred_title = None
         
         """Icons"""
         self.menu_icon = None
@@ -62,13 +64,16 @@ class App(tk.Tk):
         self.login_frame = None
         self.dataUser_frame = None
         self.login_auth_frame = None
+        self.prediction_comboBox_frame = None
 
+        self.diasMes = calendar.monthrange(datetime.now().year, datetime.now().month)[1]
+        print(f"dias en {self.diasMes} en {datetime.today().month}")
 
         """TimeDeltas"""
         self.time_deltas = {
                             "1 día": pd.Timedelta(days=1),
                             "1 semana": pd.Timedelta(weeks=1),
-                            "1 mes": pd.DateOffset(months=1),
+                            "1 mes": pd.Timedelta(days=self.diasMes),
                             "1 hora": pd.Timedelta(hours=1),
                             "1 min": pd.Timedelta(minutes=1)
                            }
@@ -547,10 +552,22 @@ class App(tk.Tk):
 
         self.header_frame.pack(side=tk.TOP, fill=tk.X) 
         self.createLastUpdateLabel(self.prediction_frame , self.controller.last_update())
-       
-        self.comboBox = ttk.Combobox(self.prediction_frame, values=[5, 10, 15, 20, 25, 30])
+
+        "Frame"
+        self.prediction_comboBox_frame = tk.Frame(self.notebook, bg="#626CC2")
+
+        self.create_label(self.prediction_comboBox_frame, "Selecciona qué datos quieres visualizar y los minutos a predecir", 14)
+
+        self.dataPredComboBox = ttk.Combobox(self.prediction_comboBox_frame, values=["HeartRate","Calories","Distance","Steps"])
+        self.dataPredComboBox.set("Selecciona")
+        self.dataPredComboBox.pack(side=tk.LEFT, pady=20)
+
+
+        self.comboBox = ttk.Combobox(self.prediction_comboBox_frame, values=[5, 10, 15, 20, 25, 30])
         self.comboBox.set("Selecciona minutos")
-        self.comboBox.pack(pady=20)
+        self.comboBox.pack(side=tk.LEFT, pady=20)
+
+        self.prediction_comboBox_frame.pack(side=tk.TOP, fill=tk.X) 
 
         sincronize_link = tk.Label(self.prediction_frame, text="Sincronizar", fg="white", bg="#626CC2", cursor="hand2", font=('Segoe UI', 12))
         sincronize_link.pack(pady=5)
@@ -652,10 +669,10 @@ class App(tk.Tk):
     """    
     def checkIfEnoughData(self, data_frec, fin, ini):
         if data_frec in self.time_deltas:
-           if data_frec == "1 mes":
-                if ini + pd.DateOffset(months=1) > fin:
-                    raise GraphDataError(f"No hay suficientes datos para mostrar con la frecuencia {data_frec}")
-           else:
+                print(ini)
+                print(self.time_deltas.get(data_frec))
+                print(f"ini mas {ini + self.time_deltas.get(data_frec)}")
+                print(fin)
                 if ini + self.time_deltas.get(data_frec) > fin:
                     raise GraphDataError(f"No hay suficientes datos para mostrar con la frecuencia {data_frec}")
         return True 
@@ -684,7 +701,7 @@ class App(tk.Tk):
             fig = Figure(figsize=(8, 4))
             ax = fig.add_subplot(111)
 
-            ax.plot(data['Time'], data[data_title], label=data_title, linestyle=':', marker='o',color='c')
+            ax.plot(data['Time'], data[data_title], label=data_title, linestyle='-',color='c')
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  
             fig.autofmt_xdate() 
 
@@ -709,8 +726,9 @@ class App(tk.Tk):
     """Logic for prediction with ML models"""
     def predict(self):
         try:
+            self.data_pred_title = self.dataPredComboBox.get()
             steps = int(self.comboBox.get())
-            threading.Thread(target=self.run_thread_prediction, args=(steps,)).start()
+            threading.Thread(target=self.run_thread_prediction, args=(steps,self.data_pred_title,)).start()
         except ValueError :
             self.show_error_message(self.prediction_frame, "¡Selecciona un número de minutos antes de predecir!")
 
@@ -721,7 +739,7 @@ class App(tk.Tk):
         Parameters:
         -steps (int) : Number of minutes to predict into the future.    
     """
-    def run_thread_prediction(self, steps):
+    def run_thread_prediction(self, steps,data_pred_title):
         try:
             self.prediction_popup = tk.Toplevel(self)
             self.prediction_popup.title("Prediciendo")
@@ -736,7 +754,7 @@ class App(tk.Tk):
             self.update_prediction(2)
             self.update_prediction(30)
 
-            self.controller.fitbitAPI.perfectDataForPrediction(steps)
+            self.controller.fitbitAPI.perfectDataForPrediction(steps, data_pred_title)
             
             self.update_prediction(70)
             self.create_prediction_info(steps)
@@ -750,6 +768,7 @@ class App(tk.Tk):
     """Logic for resulted prediction graph"""
     def create_prediction_info(self,steps):
         predictions = self.controller.predictions(steps)
+        print(f"Predicciones del modelo {predictions}")
         self.graphPredictions(predictions)
        
     """
@@ -773,7 +792,7 @@ class App(tk.Tk):
         fig.autofmt_xdate() 
 
         ax.set_xlabel('Tiempo')
-        ax.set_ylabel('HeartRate')
+        ax.set_ylabel(self.data_pred_title)
         ax.set_title('Predicciones')
         ax.legend()
         ax.grid(True)
@@ -807,7 +826,7 @@ class App(tk.Tk):
             self.update_progress(25)
 
             if ultimaAct == "Nunca":
-                dates = self.get_last_30_days()
+                dates = self.get_last_60_days()
             else:
                 dates = self.get_dates_since_last_activity(ultimaAct)
 
@@ -852,10 +871,11 @@ class App(tk.Tk):
         self.prediction_popup.update_idletasks()
 
 
-    """Logic for get last 30 day from actual date"""
-    def get_last_30_days(self):
+    """Logic for get last 60 day from actual date"""
+    def get_last_60_days(self):
         today = datetime.today()
-        start_date = today - timedelta(days=30)
+        start_date = today - timedelta(days=60)
+        print(f"start date in get last : {start_date}")
         return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(31)]
    
     """

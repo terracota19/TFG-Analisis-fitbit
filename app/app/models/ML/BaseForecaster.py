@@ -8,7 +8,8 @@ class BaseForecaster :
         "Forecaster Information"
         self.steps = None
         self.lags =  None
-
+        
+        """Data """
         self.datos_train = None
         self.future_exog = None
         
@@ -33,7 +34,7 @@ class BaseForecaster :
     """
         Entrenamos el modelo con los datos de entrenamiento y variables exogenenas
     """
-    def fitModel(self, datos_train, future_exog, steps, best_lags):
+    def fitModel(self, datos_train, future_exog, data_pred_title, steps, best_lags):
 
         self.steps = steps
         self.lags = best_lags
@@ -45,12 +46,20 @@ class BaseForecaster :
         
         self.datos_train = datos_train        
         self.future_exog = future_exog
-        
-        self.forecaster.fit(y=self.datos_train['HeartRate'], exog=self.datos_train[['Calories','Steps','Distance']])
+            
+        self.forecaster.fit(y=self.datos_train[data_pred_title], exog=self.getExogVariables(data_pred_title))
        
+    """
+        Obtiene las columnas menos el valor a predecir (data_title)
+    """
+    def getExogVariables(self, data_title):
+        return self.datos_train.drop(columns=[data_title, 'Id'])
+    
+    
     """
         Para predecir a x minutos en el futuro
     """
     def forecast(self):
+        
         self.predicciones = self.forecaster.predict(steps=self.steps, exog=self.future_exog)
         return self.predicciones

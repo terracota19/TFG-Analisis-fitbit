@@ -198,10 +198,14 @@ class FitbitAPI:
         -steps (int) : Number of minutes to predict into future.
         
     """
-    def perfectDataForPrediction(self,steps):  
+    def perfectDataForPrediction(self,steps, data_pred_title):  
        model_name, best_lags = self.getBestModelAndLagsWith(steps)
-       datos_train, future_exog = self.dataHandler.perfectDataForPrediction(steps, self.user_id)
-       self.models.get(model_name).fitModel(datos_train, future_exog, steps, best_lags)
+       datos_train, future_exog = self.dataHandler.perfectDataForPrediction(steps, data_pred_title, self.user_id)
+       
+       print(f"datos_train in method perfectDataForPrediction: \n {datos_train}") 
+       print(f"futuer in perfectDta for \n {future_exog}")
+
+       self.models.get(model_name).fitModel(datos_train, future_exog, data_pred_title, steps, best_lags)
    
     """
         Checks whether token is expirede and needed ReAuth from client
