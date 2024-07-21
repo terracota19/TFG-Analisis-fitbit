@@ -53,46 +53,9 @@ class FitBitDataHandler :
             start_time = end_time - self.time_deltas[data_frec]
             return data[(data['Time'] >= start_time) & (data['Time'] <= end_time)][['Time', data_title]]
         
-        elif data_frec == "ahora" and data_title == "HeartRate":
-           return self.getNowFrecFromFitbit(user_id, access_token, end_time)
         else:
             raise ValueError(f"Unsupported data_frec value: {data_frec}")
         
-    """
-        Gets user last frecuency in real time
-
-        Parameters:
-        -user_id (str) : User id.
-        -access_token (str) : User fitbit access_token.
-        -data_csv_end_time (Datetime): Last user  minute available in user data stored.
-
-        Returns:
-        -(csv): Containing last heartRate in real time. 
-    """
-    def getNowFrecFromFitbit(self,user_id, access_token, data_csv_end_time):
-        base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/"   
-
-        if(datetime.now() > data_csv_end_time):
-            raise SyncronizedError("Actualiza los datos de tu pulsera a través de la app de Fitbit")
-        
-        start_time = datetime.now().strftime("%H:%M")
-        end_time = (datetime.now() + pd.Timedelta(seconds=1)).strftime("%H:%M")
-        heart_data = self.fetchData(base_url, '1sec', start_time, end_time, dates=["today"], access_token=access_token)        
-        
-        if heart_data and 'activities-heart-intraday' in heart_data[0]:
-            csv_filename = f"app/DataAPI/{user_id}/heart_rate_now.csv"
-            self.createDirectory(csv_filename)
-
-            with open(csv_filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(['Time', 'HeartRate'])
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                heart_rate_value = heart_data[0]['activities-heart-intraday']['dataset'][0]['value'] if heart_data else None
-                writer.writerow([current_time, heart_rate_value])
-            
-            return csv_filename
-        else:
-            raise SyncronizedError("No se pudieron obtener los datos del último segundo desde Fitbit.")
 
     """
         Combines all 'base_filename' existing csv`s from January to December into one csv 

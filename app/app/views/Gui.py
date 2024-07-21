@@ -683,7 +683,7 @@ class App(tk.Tk):
 
         self.calendars_frame.pack()   
         
-        radio_options = ["Todos tus datos", "1 mes", "1 semana", "1 día", "1 hora", "1 min", "ahora"]
+        radio_options = ["Todos tus datos", "1 mes", "1 semana", "1 día", "1 hora", "1 min"]
         self.radio_option_selected.set("Todos tus datos")
 
         for option in radio_options:
