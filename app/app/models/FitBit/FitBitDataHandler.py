@@ -336,9 +336,11 @@ class FitBitDataHandler :
         all_heart_data =  self.fetchData(base_url, detail_level, start_time, end_time, dates, access_token)
 
         # self.storeUserBaseHeartRate(all_heart_data)
-
+        first_date = dates[0]
+        month = datetime.strptime(first_date, "%Y-%m-%d").month
+        
         self.store_HeartRate_csv(all_heart_data,
-                                 csv_filename=f"app/DataAPI/{user_id}/heart_rate_data_{datetime.today().month}.csv" ,
+                                 csv_filename=f"app/DataAPI/{user_id}/heart_rate_data_{month}.csv" ,
                                  csv_headers= ['Id', 'Date', 'Time', 'HeartRate'], user_id=user_id)
     
     # def storeUserBaseHeartRate(self,all_heart_rate):
@@ -353,7 +355,7 @@ class FitBitDataHandler :
         -source_data (json) : [Distance, Steps, Calories] CSV data.
         -csv_headers (list) : all headers of the resulted CSV.
     """  
-    def store_CaloriesDistanceSteps_csv(self,source, source_data,user_id):
+    def store_CaloriesDistanceSteps_csv(self,source, source_data,dates,user_id):
         csv_data = []
         for data in source_data:
                 activities_key = f"activities-{source}"
@@ -367,7 +369,10 @@ class FitBitDataHandler :
                             value = entry['value']
                             csv_data.append([user_id, date, time, value])
 
-        csv_file_path = f"app/DataAPI/{user_id}/{source}_data_{datetime.today().month}.csv"
+        first_date = dates[0]
+        month = datetime.strptime(first_date, "%Y-%m-%d").month
+
+        csv_file_path = f"app/DataAPI/{user_id}/{source}_data_{month}.csv"
 
         self.createDirectory(csv_file_path)
            
@@ -409,7 +414,7 @@ class FitBitDataHandler :
             base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/{source}/date/"
             source_data = self.fetchData(base_url, detail_level, start_time, end_time, dates, access_token)
 
-            self.store_CaloriesDistanceSteps_csv(source,source_data,user_id)
+            self.store_CaloriesDistanceSteps_csv(source,source_data,dates,user_id)
     """
         Get remainig request for user logged in.
         Maximun request per user per hour is 150.

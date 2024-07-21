@@ -580,7 +580,7 @@ class App(tk.Tk):
         self.dataPredComboBox.grid(row=0, column=0, padx=20, pady=5)
 
 
-        #self.comboBox = ttk.Combobox(self.combobox_frame, values=[5, 10, 15, 20, 25, 30])
+        
         self.spinBox = tk.Spinbox(self.combobox_frame, from_=5, to=30, increment=5)
         #self.comboBox.set("Selecciona minutos")
       
@@ -682,7 +682,6 @@ class App(tk.Tk):
         self.to_calendars_frame.grid(row=0, column=1, padx=20, pady=5) 
 
         self.calendars_frame.pack()   
-
         
         radio_options = ["Todos tus datos", "1 mes", "1 semana", "1 día", "1 hora", "1 min", "ahora"]
         self.radio_option_selected.set("Todos tus datos")
@@ -937,10 +936,25 @@ class App(tk.Tk):
             else:
                 dates = self.get_dates_since_last_activity(ultimaAct)
 
-            try:
-                self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
-                self.update_progress(30) 
-                self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+            try: 
+                if ultimaAct == "Nunca":           
+                    mid_point = len(dates) // 2
+                    first_dates = dates[:mid_point]
+                    second_dates = dates[mid_point:]
+            
+                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", first_dates)
+                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", second_dates)
+                    
+                    self.update_progress(30)
+                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", first_dates)
+                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", second_dates)
+
+                else:
+                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+                    
+                    self.update_progress(30)
+                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+
                 self.update_progress(75)
                 self.controller.fitbitAPI.dataPreprocess()
                 ultimaAct = self.controller.lastFitBitDataUpdate()
@@ -981,9 +995,8 @@ class App(tk.Tk):
     """Logic for get last 60 day from actual date"""
     def get_last_60_days(self):
         today = datetime.today()
-        start_date = today - timedelta(days=60)
-        print(f"start date in get last : {start_date}")
-        return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(31)]
+        start_date = today - timedelta(days=59)
+        return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(60)]
    
     """
         Logic for getting days passed since last updated/syncronize
