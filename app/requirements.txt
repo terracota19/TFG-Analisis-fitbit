@@ -6,6 +6,7 @@ xgboost
 lightgbm
 requests
 pybase64
+tkcalendar
 matplotlib
 skforecast
 scikit-learn
