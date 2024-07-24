@@ -354,7 +354,16 @@ class App(tk.Tk):
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
         self.menu_frame = tk.Frame(self.settings_frame, bg="#626CC2")
 
-        self.create_label(self.settings_frame, "Ajustes General:", 28)
+        "Icon"
+        self.herramienta_icon = Image.open('app/assets/images/herramienta.png')
+        self.herramienta_icon = self.herramienta_icon.resize((30, 30), Image.LANCZOS)  
+        self.herramienta_icon = ImageTk.PhotoImage(self.herramienta_icon)
+
+       
+        self.general = tk.Label(self.settings_frame, text="Ajustes General:", font=("Segoe UI", 28), fg="white", bg="#626CC2", image=self.herramienta_icon, compound="right")
+        self.general.image = self.saludo_icon  
+        self.general.pack()
+    
 
         change_user_name_link = tk.Label(self.settings_frame, text="Cambiar nombre de usuario:", fg="white", bg="#626CC2", cursor="hand2", font=('Segoe UI', 12))
         change_user_name_link.pack(pady=5)
