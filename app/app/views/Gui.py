@@ -34,9 +34,7 @@ class App(tk.Tk):
         self.controller = Controller(self)
 
         """View Elements Status/Information"""
-        self.popup =None
-        self.change_popup = None
-        self.change_pass_popup = None
+        self.popup = None
         self.update_label = None
         self.current_prediction_canvas = None
         self.current_data_canvas = None
@@ -47,6 +45,8 @@ class App(tk.Tk):
         self.prediction_popup = None
         self.filter_popup = None
         self.use_time_checkbox_var = None
+        self.change_password_frame = None
+        self.change_username_frame = None
 
         self.from_hour_spinbox = None
         self.from_minute_spinbox = None
@@ -389,40 +389,40 @@ class App(tk.Tk):
         Logic for user to change password
     """
     def changeUserPass(self):
-        self.change_pass_popup = tk.Toplevel(self.settings_frame)
-        self.change_pass_popup.title("Cambiar contraseña de usuario")
-        self.change_pass_popup.geometry("400x150")
-        self.change_pass_popup.configure(bg="#626CC2")
+        
+        self.change_password_frame = tk.Frame(self.settings_frame, bg="#626CC2")
  
-        self.create_entry(self.change_pass_popup, "Nueva contraseña:", True, 'change_pass_user_entry', "<KeyPress-Return>", "changeUserPassConfirmed")
-        self.create_button(self.change_pass_popup,"Confirmar",self.changeUserPassConfirmed)
+        self.create_entry(self.change_password_frame, "Nueva contraseña:", True, 'change_pass_user_entry', "<KeyPress-Return>", "changeUserPassConfirmed")
+        self.create_button(self.change_password_frame,"Confirmar",self.changeUserPassConfirmed)
+        self.change_password_frame.pack(pady=10, fill=tk.X)
         
     """
         Logic for changing user username
     """
     def changeUserName(self):
-         
-        self.change_popup = tk.Toplevel(self.settings_frame)
-        self.change_popup.title("Cambiar nombre de usuario")
-        self.change_popup.geometry("400x150")
-        self.change_popup.configure(bg="#626CC2")
- 
-        self.create_entry(self.change_popup, "Nuevo nombre de usuario:", False, 'change_user_entry', "<KeyPress-Return>", "changeUserNameConfirmed")
-        self.create_button(self.change_popup,"Confirmar", self.changeUserNameConfirmed)
+        
+        self.change_username_frame = tk.Frame(self.settings_frame, bg="#626CC2")
+    
+        self.create_entry(self.change_username_frame, "Nuevo nombre de usuario:", False, 'change_user_entry', "<KeyPress-Return>", "changeUserNameConfirmed")
+        self.create_button(self.change_username_frame,"Confirmar", self.changeUserNameConfirmed)  
+        self.change_username_frame.pack(pady=10, fill=tk.X)
 
     """
         Logic that changes user secret password to a new one.
     """
-    def changeUserPassConfirmed(self,event=None):
+    def changeUserPassConfirmed(self, event=None):
         try:
             new_pass = self.change_pass_user_entry.get()
             self.controller.changeUserPass(new_pass)
-            self.change_pass_popup.destroy()
-
+            if self.change_password_frame is not None :
+                self.change_password_frame.destroy()
+            if self.change_username_frame is not None:
+             self.change_username_frame.destroy()  
+           
         except UserRegistrationError as e:
-             self.show_error_message(self.change_pass_popup, e.getMessage())
+             self.show_error_message(self.change_password_frame, e.getMessage())
         except ModifyError as e:
-            self.show_error_message(self.change_popup, e.getMessage())
+            self.show_error_message(self.change_password_frame, e.getMessage())
 
     """
         Logic that changes user username to a new one.
@@ -431,9 +431,15 @@ class App(tk.Tk):
         try:
             new_name = self.change_user_entry.get()
             self.controller.changeUserName(new_name)
-            self.change_popup.destroy()
+
+            if self.change_password_frame is not None :
+                self.change_password_frame.destroy()
+            if self.change_username_frame is not None:
+             self.change_username_frame.destroy() 
+ 
+        
         except ModifyError as e:
-            self.show_error_message(self.change_popup, e.getMessage())
+            self.show_error_message(self.change_username_frame, e.getMessage())
 
 
     """Logic for user account delete"""
