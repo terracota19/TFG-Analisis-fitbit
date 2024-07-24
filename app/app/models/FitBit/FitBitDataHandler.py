@@ -227,7 +227,10 @@ class FitBitDataHandler :
         
         combined_file_path = f"app/DataAPI/{user_id}/test_train_data_api_merged.csv"
         self.createDirectory(combined_file_path)
-        data = pd.read_csv(combined_file_path)
+        try:
+            data = pd.read_csv(combined_file_path)
+        except FileNotFoundError :
+            raise PredictionError("Error en la predicción")
         
         if len(data) > 1:
            
