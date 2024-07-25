@@ -17,7 +17,7 @@ IF %ERRORLEVEL% NEQ 0 (
     python -m ensurepip --default-pip
 )
 
-REM Installing HeartPred'it dependencias
+REM Installing HeartPred'it dependencies
 echo Installing HeartPred'it dependencies...
 pip install -r requirements.txt
 
