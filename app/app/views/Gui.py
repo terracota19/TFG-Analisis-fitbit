@@ -1049,7 +1049,7 @@ class App(tk.Tk):
                 data = data.resample('ME').mean()
 
             ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c')
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m %H:%M'))
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             fig.autofmt_xdate()  
 
             ax.set_xlabel('Tiempo')
