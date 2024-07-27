@@ -1153,7 +1153,7 @@ class App(tk.Tk):
         
         texto, icon = self.insidePreferedHeartRateZone(predictions)
 
-        if texto != "Ninguno":
+        if texto != "Ninguno" and self.data_pred_title == "HeartRate":
             
             self.any_icon = Image.open(f'app/assets/images/{icon.value}')
             self.any_icon= self.any_icon.resize((30, 30), Image.LANCZOS)  
