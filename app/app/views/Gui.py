@@ -121,7 +121,6 @@ class App(tk.Tk):
         self.create_login_frame()
     
  
-
     """Create Login Frame where login elements such as email and password entries"""
     def create_login_frame(self):
         self.login_frame = tk.Frame(self.notebook, bg="#626CC2")
@@ -202,7 +201,6 @@ class App(tk.Tk):
                 new_access_token, new_refresh_token, new_expires_in, user_id, reauth_required = self.fitbitAPI.refresh_access_token(refresh_token)
                 if reauth_required:
                     return None, None, None, None, True
-
                 
                 self.storeTokenInfo(email, user_id, new_access_token, new_refresh_token, new_expires_in)
                 return new_access_token, new_refresh_token, new_expires_in, user_id, False
@@ -397,10 +395,19 @@ class App(tk.Tk):
 
         self.menu_frame.pack()
         self.notebook.select(self.settings_frame)
-
+    
+    """
+        Logic for user username change
+    """
     def changeUserPorpouse(self, event = None):
         new_porpuse = self.purposeComboBox.get()
-
+        self.destroyChangesFrames()
+        return self.controller.changeUserPorpouse(new_porpuse)
+    
+    """
+        Destroys all user possible changes frames
+    """
+    def destroyChangesFrames(self):
         if self.change_password_frame is not None :
             self.change_password_frame.destroy()
 
@@ -409,8 +416,6 @@ class App(tk.Tk):
 
         if self.change_porpouse_frame is not None:
             self.change_porpouse_frame.destroy() 
-
-        return self.controller.changeUserPorpouse(new_porpuse)
 
     """
         Logic for user to change password
@@ -445,6 +450,9 @@ class App(tk.Tk):
         
         self.change_username_frame.pack(pady=10, fill=tk.X)
 
+    """
+        Logic for Porpouse user change creation
+    """
     def createPorpouseFrame(self):
           
         self.change_porpouse_frame = tk.Frame(self.settings_frame, bg="#626CC2")
@@ -468,14 +476,7 @@ class App(tk.Tk):
             new_pass = self.change_pass_user_entry.get()
             self.controller.changeUserPass(new_pass)
 
-            if self.change_password_frame is not None :
-                self.change_password_frame.destroy()
-
-            if self.change_username_frame is not None:
-             self.change_username_frame.destroy()  
-    
-            if self.change_porpouse_frame is not None:
-                self.change_porpouse_frame.destroy()
+            self.destroyChangesFrames()
            
         except UserRegistrationError as e:
              self.show_error_message(self.change_password_frame, e.getMessage())
@@ -490,15 +491,7 @@ class App(tk.Tk):
             new_name = self.change_user_entry.get()
             self.controller.changeUserName(new_name)
 
-            if self.change_password_frame is not None :
-                self.change_password_frame.destroy()
-
-            if self.change_username_frame is not None:
-             self.change_username_frame.destroy() 
-
-            if self.change_porpouse_frame is not None:
-                self.change_porpouse_frame.destroy()
- 
+            self.destroyChangesFrames()
         
         except ModifyError as e:
             self.show_error_message(self.change_username_frame, e.getMessage())
@@ -543,7 +536,9 @@ class App(tk.Tk):
 
         self.create_login_frame()
 
-
+    """
+        Logic for deleting all posible frames in app
+    """
     def deleteAllFrames(self):
         self.settings_frame = None
         self.register_frane = None
@@ -551,6 +546,7 @@ class App(tk.Tk):
         self.register_frame = None
         self.app_frame = None
         self.dataUser_frame = None
+
     """
         Creates Welcome label into 'frame' = frame
 
@@ -612,6 +608,9 @@ class App(tk.Tk):
         self.update_label.image = self.band_icon  
         self.update_label.pack()
 
+    """
+        Logic that creates register frame, so user can register
+    """
     def create_register_frame(self):
         if self.register_frame :
             self.close_register_tab()
@@ -664,7 +663,9 @@ class App(tk.Tk):
             self.show_error_message(self.register_frame, e.getMessage())
     
   
-
+    """
+        Logic to register a new user
+    """
     def on_register_submit(self, event=None):
         try:
             usuario = self.user_entry.get()
@@ -827,7 +828,10 @@ class App(tk.Tk):
 
         self.userData_graph_frame = tk.Frame(self.dataUser_frame, bg="#626CC2", padx=20, pady=20)
         self.userData_graph_frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
-        
+
+    """
+        Logic for showing Filter options
+    """   
     def showFilterOptions(self):
 
         self.filter_popup = tk.Toplevel(self, bg="white")
@@ -860,12 +864,18 @@ class App(tk.Tk):
 
         self.create_hour_minute_spinboxes()
 
+    """
+        Logic for toogle hour/minute range in data selection spinboxes
+    """
     def toggle_time_spinboxes(self):
         if self.use_time_checkbox_var.get():
             self.show_hour_minute_spinboxes()
         else:
             self.hide_hour_minute_spinboxes()
 
+    """
+        Logic for creating hour/minute spinboxes
+    """
     def create_hour_minute_spinboxes(self):
 
         self.from_hour_spinbox = tk.Spinbox(self.from_date.master, from_=0, to=23, width=5, format="%02.0f", wrap=True, textvariable=self.from_hour_var)
@@ -874,16 +884,20 @@ class App(tk.Tk):
         self.to_hour_spinbox = tk.Spinbox(self.to_date.master, from_=0, to=23, width=5, format="%02.0f", wrap=True, textvariable=self.to_hour_var)
         self.to_minute_spinbox = tk.Spinbox(self.to_date.master, from_=0, to=59, width=5, format="%02.0f", wrap=True, textvariable=self.to_minute_var)
 
+    """
+        Logic for showing hour/minute spinboxes
+    """
     def show_hour_minute_spinboxes(self):
-        
 
         self.from_hour_spinbox.pack(side=tk.LEFT, padx=5)
         self.from_minute_spinbox.pack(side=tk.LEFT, padx=5)
-
         
         self.to_hour_spinbox.pack(side=tk.LEFT, padx=5)
         self.to_minute_spinbox.pack(side=tk.LEFT, padx=5)
 
+    """
+        Logic for hiding hour/minute spinboxes
+    """
     def hide_hour_minute_spinboxes(self):
 
         self.from_hour_spinbox.pack_forget()
@@ -891,6 +905,9 @@ class App(tk.Tk):
         self.to_hour_spinbox.pack_forget()
         self.to_minute_spinbox.pack_forget()
 
+    """
+        Logic for selecting date range in show notebook
+    """
     def selectDateRange(self):
 
         from_date = self.from_date.get_date()  
@@ -942,7 +959,6 @@ class App(tk.Tk):
             dif = fin - ini
             try:
                 self.graphData(data, data_frec, data_title, ini, fin, dif)
-
             except GraphDataError as e:
                 self.show_error_message(self.dataUser_frame, e.getMessage())
 
@@ -1029,6 +1045,17 @@ class App(tk.Tk):
 
         self.current_data_canvas = canvas
 
+    """
+        Logic for plotting user data into a graph
+
+        Parameters:
+        -data (csv) : Contains data to be plotted
+        -data_frec (str) : Data show frecuency
+        -data_title (str) : Selected type of data to be plotted.
+        -ini (Datetime) : Datetime object where data begins
+        -fin (Datetime) : Datetime object where data ends
+        -dif (Datetime) : Datetime that contains data plot length 
+    """
     def graphData(self, data, data_frec, data_title, ini, fin, dif):
 
         if self.current_data_canvas:
@@ -1169,6 +1196,13 @@ class App(tk.Tk):
 
         self.current_prediction_canvas = canvas
     
+    """
+        Logic that checks whether predicted_mean are inside prefered HeartRate Zone
+
+        Parameters:
+        -predictions (list) : List of ML prediction for logged user.
+
+    """
     def insidePreferedHeartRateZone(self, predictions):
        
         preferencia, FCM_value, FCR_value =  self.controller.get_user_purpose_FCM_FCR()
@@ -1187,7 +1221,14 @@ class App(tk.Tk):
         else :
             return self.checkWhereMeanLands(prediction_mean, zonas)
         
+    """
+        Logic that returns in which zone predicted_mean lands
 
+        Parameters:
+        -prediction_mean (int) : Mean of prediction list
+        -zones (dictionary) : Dictionary that contains every zone
+        
+    """
     def checkWhereMeanLands(self, prediction_mean, zones):
         return self.controller.checkWhereMeanLands(prediction_mean, zones)
 
