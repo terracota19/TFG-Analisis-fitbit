@@ -343,15 +343,17 @@ class FitBitDataHandler :
                                  csv_headers= ['Id', 'Date', 'Time', 'HeartRate'], user_id=user_id)
 
         
-    def getRestingHeartRate(self, date, access_token, user_id):
-        url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/{date}/1d.json"
+    def getRestingHeartRate(self, access_token, user_id):
+      
+        base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/today/1d/1min.json"
+
         headers = {'Authorization': f'Bearer {access_token}'}
-        response = requests.get(url, headers=headers)
+        response = requests.get(base_url, headers=headers)
         
         if response.status_code == 200:
             return response.json()['activities-heart'][0]['value'].get('restingHeartRate')
         else:
-            print(f"Error obteniendo restingHeartRate para {date}: {response.status_code}")
+            print(f"Error obteniendo restingHeartRate para today : {response.status_code}")
             print(response.text)
             return None
     

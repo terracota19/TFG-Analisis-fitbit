@@ -144,7 +144,7 @@ class FitbitAPI:
         self.storeMongoTokens(self.access_token, self.refresh_token, self.expires_in, self.user_id)
     
     def FCR(self):
-        return self.dataHandler.getRestingHeartRate("today", self.access_token, self.user_id)
+        return self.dataHandler.getRestingHeartRate(self.access_token, self.user_id)
 
     """
         Method to copy new expires_in value from new access,refresh tokens.

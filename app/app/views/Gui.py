@@ -680,7 +680,7 @@ class App(tk.Tk):
                     if self.controller.register(usuario, email, password, age, porpuse):
                         self.close_register_tab()
                         self.notebook.select(self.login_frame)
-                        self.show_error_message(self.login_frame, "¡Se ha creado correctamente el usuario!", 5000)
+                        self.show_error_message(self.login_frame, "¡Se ha creado correctamente el usuario!", 10000)
 
         except UserRegistrationError as e:
             self.show_error_message(self.register_frame, e.getMessage())
@@ -912,17 +912,23 @@ class App(tk.Tk):
 
         from_date = self.from_date.get_date()  
         
-        from_hour = int(self.from_hour_spinbox.get())  
-        from_minute = int(self.from_minute_spinbox.get())  
+        if self.use_time_checkbox == "True":
+            from_hour = int(self.from_hour_spinbox.get())  
+            from_minute = int(self.from_minute_spinbox.get())
+
+            to_hour = int(self.to_hour_spinbox.get())  
+            to_minute = int(self.to_minute_spinbox.get())  
+        else :
+            from_hour= int(0)
+            from_minute = int(0)
+            to_hour = int(23)  
+            to_minute = int(59)  
       
         self.from_datetime = datetime.combine(from_date, datetime.min.time())
         self.from_datetime = self.from_datetime.replace(hour=from_hour, minute=from_minute)
 
         to_date = self.to_date.get_date()  
-
-        to_hour = int(self.to_hour_spinbox.get())  
-        to_minute = int(self.to_minute_spinbox.get())  
-    
+           
         self.to_datetime = datetime.combine(to_date, datetime.min.time())
         self.to_datetime = self.to_datetime.replace(hour=to_hour, minute=to_minute)
 
@@ -1020,9 +1026,9 @@ class App(tk.Tk):
         data.set_index('Time', inplace=True)
 
         if dif.days >= 30:
-            data = data.resample('ME').mean()
+            data = data.resample('M').mean()
 
-        ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c')
+        ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c', linewidth=0.8)
         
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m %H:%M'))
         fig.autofmt_xdate()  
@@ -1072,10 +1078,8 @@ class App(tk.Tk):
             fig = Figure(figsize=(8, 4))
             ax = fig.add_subplot(111)
 
-            if data_frec in ["1 mes","Todos tus datos"] and dif.days >= 30:
-                data = data.resample('ME').mean()
 
-            ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c')
+            ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c', linewidth=0.8)
             ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             fig.autofmt_xdate()  
 
@@ -1154,6 +1158,7 @@ class App(tk.Tk):
 
     """
     def graphPredictions(self, predictions):
+        print(f"prediction in graphPredictions {predictions}")
         if self.current_prediction_canvas:
             self.current_prediction_canvas.get_tk_widget().destroy()
 
@@ -1165,7 +1170,7 @@ class App(tk.Tk):
         fig = Figure(figsize=(8, 4))
         ax = fig.add_subplot(111)
 
-        ax.plot(predictions.index, predictions, label='Predicciones', linestyle='-', color = 'c')
+        ax.plot(predictions.index, predictions, label='Predicciones', linestyle='-', color = 'c', linewidth=0.8)
 
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))  
         fig.autofmt_xdate() 
@@ -1178,9 +1183,13 @@ class App(tk.Tk):
 
         self.predict_range_graph_frame = tk.Frame(self.prediction_graph_frame, bg="#626CC2")
         
-        texto, icon = self.insidePreferedHeartRateZone(predictions)
+        texto = None
+        icon = None
+        if self.data_pred_title == "HeartRate" :
+            lista = [124]
+            texto, icon = self.insidePreferedHeartRateZone(lista)
 
-        if texto != "Ninguno" and self.data_pred_title == "HeartRate":
+        if (texto is not None) and (texto != "Ninguno" and self.data_pred_title == "HeartRate"):
             
             self.any_icon = Image.open(f'app/assets/images/{icon.value}')
             self.any_icon= self.any_icon.resize((30, 30), Image.LANCZOS)  
@@ -1211,15 +1220,18 @@ class App(tk.Tk):
             return "Ninguno", None
         
         zonas = self.controller.calcular_zonas_fc(FCM_value, FCR_value) 
+        print(f"zonas {zonas}")
         zonas_prefererida_enum = self.controller.getZonesEnum(preferencia)
         zona_preferida_fc_min, zona_preferida_fc_max = zonas.get(zonas_prefererida_enum)
     
         prediction_mean = statistics.mean(predictions)
-        
+
+        print(f"predicciones {predictions}")
+        print(f"prediction_mean {prediction_mean}")
         if (zona_preferida_fc_min <= prediction_mean <= zona_preferida_fc_max):
-                return "¡Sigue así!", IconsEnum.HAPPY
+                return "¡Sigue así! ", IconsEnum.HAPPY
         else :
-            return self.checkWhereMeanLands(prediction_mean, zonas)
+            return self.checkWhereMeanLands(prediction_mean, zonas, zonas_prefererida_enum)
         
     """
         Logic that returns in which zone predicted_mean lands
@@ -1229,8 +1241,8 @@ class App(tk.Tk):
         -zones (dictionary) : Dictionary that contains every zone
         
     """
-    def checkWhereMeanLands(self, prediction_mean, zones):
-        return self.controller.checkWhereMeanLands(prediction_mean, zones)
+    def checkWhereMeanLands(self, prediction_mean, zones, zona_preferida):
+        return self.controller.checkWhereMeanLands(prediction_mean, zones, zona_preferida)
 
     """Logic for updating/syncronized with latest user data"""
     def update_status(self):
@@ -1255,29 +1267,35 @@ class App(tk.Tk):
             self.update_progress(25)
 
             if ultimaAct == "Nunca":
-                dates = self.get_last_60_days()
+                dates = self.get_last_30_days()
             else:
                 dates = self.get_dates_since_last_activity(ultimaAct)
-
+            print(f"Dates: {dates}")
             try: 
-                if ultimaAct == "Nunca":           
-                    mid_point = len(dates) // 2
-                    first_dates = dates[:mid_point]
-                    second_dates = dates[mid_point:]
+                # =========================================================
+                # if ultimaAct == "Nunca":           
+                    # mid_point = len(dates) // 2
+                    # first_dates = dates[:mid_point]
+                    # second_dates = dates[mid_point:]
             
-                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", first_dates)
-                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", second_dates)
+                    #self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", first_dates)
+                    #self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", second_dates)
                     
-                    self.update_progress(30)
-                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", first_dates)
-                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", second_dates)
+                    # self.update_progress(30)
+                    #self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", first_dates)
+                    #self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", second_dates)
 
-                else:
-                    self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+                # else:
+                    # self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
                     
-                    self.update_progress(30)
-                    self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
-
+                    # self.update_progress(30)
+                    # self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
+                # =========================================================
+                
+                self.controller.fitbitAPI.getHeartRateData("1min", "00:00", "23:59", dates)
+                    
+                self.update_progress(30)
+                self.controller.fitbitAPI.getCaloriesDistanceStepsData("1min", "00:00", "23:59", dates)
                
                 self.update_progress(75)
                 self.controller.fitbitAPI.dataPreprocess()
@@ -1316,11 +1334,11 @@ class App(tk.Tk):
         self.prediction_popup.update_idletasks()
 
 
-    """Logic for get last 60 day from actual date"""
-    def get_last_60_days(self):
+    """Logic for get last 30 day from actual date"""
+    def get_last_30_days(self):
         today = datetime.today()
-        start_date = today - timedelta(days=59)
-        return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(60)]
+        start_date = today - timedelta(days=29)
+        return [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(30)]
    
     """
         Logic for getting days passed since last updated/syncronize

@@ -1,4 +1,5 @@
 
+import numpy as np
 from skforecast.ForecasterAutoreg import ForecasterAutoreg
 
 class BaseForecaster :
@@ -62,4 +63,5 @@ class BaseForecaster :
     def forecast(self):
         
         self.predicciones = self.forecaster.predict(steps=self.steps, exog=self.future_exog)
-        return self.predicciones
+        result = np.floor(self.predicciones * 100) / 100
+        return np.maximum(result, 0)

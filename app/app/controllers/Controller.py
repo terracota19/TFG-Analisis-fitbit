@@ -34,15 +34,15 @@ class Controller:
         """API Fitbit"""
         load_dotenv()
 
-        #juan_fitbit_client_id = os.getenv("JUAN_FITBIT_CLIENT_ID")
-        #juan_fitbit_client_secret = os.getenv("JUAN_FITBIT_CLIENT_SECRET")
+        juan_fitbit_client_id = os.getenv("JUAN_FITBIT_CLIENT_ID")
+        juan_fitbit_client_secret = os.getenv("JUAN_FITBIT_CLIENT_SECRET")
 
-        javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
-        javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
+        # javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
+        # javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
 
     
-        #self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
-        self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
+        self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
+        # self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
     
         """OAuthServer""" 
         self.oauth_server = OAuthServer(self.fitbitAPI)
@@ -86,19 +86,35 @@ class Controller:
         return self.fitbitAPI.userDataByRange(data_title, from_datetime, to_datetime)
 
 
-    def checkWhereMeanLands(self, prediction_mean, zonas):
+    def checkWhereMeanLands(self, prediction_mean, zonas, zona_preferida):
         
-        zona_landed = None
+        zona_landed_enum= None
         for zona, (intensidad_min, intensidad_max) in zonas.items():
             if intensidad_min <= prediction_mean <= intensidad_max:
-                zona_landed = zona
+                zona_landed_enum = zona
 
-        if zona_landed is not None:
-            zonas_landed_enum = self.getZonesEnum(zona_landed)
-            zona_landed_fc_min, zona_landed_fc_max = zonas.get(zonas_landed_enum)
+        print(f"ZONAS {zonas}")
+        if zona_landed_enum is not None:
+
+            dif = (zona_landed_enum.value - zona_preferida.value)
+            if  dif < 0:
+                texto = "Te estas quedando corto"
+            elif (dif > 0):
+                texto = "Te estas pasando"
+                
+            icon = IconsEnum.SAD
+            if (not (zona_landed_enum == PreferenciaEnum.ZONA0 or zona_landed_enum == PreferenciaEnum.ZONA6)):
+                if (abs(dif) == 1) :
+                    icon = IconsEnum.MIDDLE
+                elif (dif > 1) : 
+                    icon = IconsEnum.SAD2
+                else :
+                    icon = IconsEnum.SAD
             
-        else :
-            return "No estas dando lo suficiente ", IconsEnum.SAD
+            return texto, icon
+            
+           
+        
               
     """
         Logic for user secret password change.
@@ -421,11 +437,13 @@ class Controller:
     def calcular_zonas_fc(self, FCM, FCReposo):
 
         self.intensidades = {
-            PreferenciaEnum.ZONA1 : (0.50, 0.60),
-            PreferenciaEnum.ZONA2 : (0.60, 0.70),
-            PreferenciaEnum.ZONA3 : (0.70, 0.80),
-            PreferenciaEnum.ZONA4 : (0.80, 0.90),
-            PreferenciaEnum.ZONA5 : (0.90, 1.00)
+            PreferenciaEnum.ZONA0 : (0.00, 0.49),
+            PreferenciaEnum.ZONA1 : (0.50, 0.59),
+            PreferenciaEnum.ZONA2 : (0.60, 0.69),
+            PreferenciaEnum.ZONA3 : (0.70, 0.79),
+            PreferenciaEnum.ZONA4 : (0.81, 0.89),
+            PreferenciaEnum.ZONA5 : (0.91, 1.00),
+            PreferenciaEnum.ZONA6 : (1.01, 2.00)
         }
         
         self.zonas = {}
