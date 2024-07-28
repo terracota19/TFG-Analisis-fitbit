@@ -45,8 +45,7 @@ class FitbitAPI:
         """List of ML models available"""
         self.models = {
                         "LightGBM": LightGBM(),
-                        "XGBoost": XGBoost(),
-                        "MLP": MLP()
+                        "XGBoost": XGBoost()
                       }
          
 
