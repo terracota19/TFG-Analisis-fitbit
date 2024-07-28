@@ -46,7 +46,7 @@ class App(tk.Tk):
         self.progress_popup = None
         self.prediction_popup = None
         self.filter_popup = None
-        self.use_time_checkbox_var = None
+        self.use_time_checkbox_var = tk.BooleanVar()
         self.change_password_frame = None
         self.change_username_frame = None
 
@@ -850,7 +850,6 @@ class App(tk.Tk):
         self.to_date = DateEntry(to_frame)
         self.to_date.pack(side=tk.LEFT)
 
-        self.use_time_checkbox_var = tk.BooleanVar()
         self.use_time_checkbox = tk.Checkbutton(self.filter_popup, text="Hora/Minuto", 
                                                 font=("Segoe UI", 11), fg="black", bg="white",
                                                 variable=self.use_time_checkbox_var, command=self.toggle_time_spinboxes)
@@ -912,36 +911,44 @@ class App(tk.Tk):
 
         from_date = self.from_date.get_date()  
         
-        if self.use_time_checkbox == "True":
-            from_hour = int(self.from_hour_spinbox.get())  
-            from_minute = int(self.from_minute_spinbox.get())
+        if self.use_time_checkbox_var.get():
+            self.from_hour = int(self.from_hour_spinbox.get())  
+            self.from_minute = int(self.from_minute_spinbox.get())
 
-            to_hour = int(self.to_hour_spinbox.get())  
-            to_minute = int(self.to_minute_spinbox.get())  
+            self.to_hour = int(self.to_hour_spinbox.get())  
+            self.to_minute = int(self.to_minute_spinbox.get())  
+            
         else :
-            from_hour= int(0)
-            from_minute = int(0)
-            to_hour = int(23)  
-            to_minute = int(59)  
+           self.resetSpinBoxes()
       
         self.from_datetime = datetime.combine(from_date, datetime.min.time())
-        self.from_datetime = self.from_datetime.replace(hour=from_hour, minute=from_minute)
+        self.from_datetime = self.from_datetime.replace(hour=self.from_hour, minute=self.from_minute)
 
         to_date = self.to_date.get_date()  
            
         self.to_datetime = datetime.combine(to_date, datetime.min.time())
-        self.to_datetime = self.to_datetime.replace(hour=to_hour, minute=to_minute)
+        self.to_datetime = self.to_datetime.replace(hour=self.to_hour, minute=self.to_minute)
 
         try:
             data_title = self.dataComboBox.get()
             self.graphDataByRange(self.controller.userDataByRange(data_title, self.from_datetime, self.to_datetime),
                                 data_title, self.from_datetime, self.to_datetime)
+
         except Exception as e:
             print(e)
             self.show_error_message(self.dataUser_frame, e)
 
         self.filter_popup.destroy()  
+        
+    """
+        Resets Spinboxes
+    """
+    def resetSpinBoxes(self):
 
+            self.from_hour= int(0)
+            self.from_minute = int(0)
+            self.to_hour = int(23)  
+            self.to_minute = int(59)  
 
     """
         Creates a user data graph with selected data_frec and selected data_title ["HeartRate","Calories","Distance","Steps"]
@@ -1158,7 +1165,7 @@ class App(tk.Tk):
 
     """
     def graphPredictions(self, predictions):
-        print(f"prediction in graphPredictions {predictions}")
+        
         if self.current_prediction_canvas:
             self.current_prediction_canvas.get_tk_widget().destroy()
 
@@ -1186,8 +1193,7 @@ class App(tk.Tk):
         texto = None
         icon = None
         if self.data_pred_title == "HeartRate" :
-            lista = [124]
-            texto, icon = self.insidePreferedHeartRateZone(lista)
+            texto, icon = self.insidePreferedHeartRateZone(predictions)
 
         if (texto is not None) and (texto != "Ninguno" and self.data_pred_title == "HeartRate"):
             
@@ -1220,14 +1226,12 @@ class App(tk.Tk):
             return "Ninguno", None
         
         zonas = self.controller.calcular_zonas_fc(FCM_value, FCR_value) 
-        print(f"zonas {zonas}")
+        
         zonas_prefererida_enum = self.controller.getZonesEnum(preferencia)
         zona_preferida_fc_min, zona_preferida_fc_max = zonas.get(zonas_prefererida_enum)
     
         prediction_mean = statistics.mean(predictions)
 
-        print(f"predicciones {predictions}")
-        print(f"prediction_mean {prediction_mean}")
         if (zona_preferida_fc_min <= prediction_mean <= zona_preferida_fc_max):
                 return "¡Sigue así! ", IconsEnum.HAPPY
         else :
@@ -1270,7 +1274,7 @@ class App(tk.Tk):
                 dates = self.get_last_30_days()
             else:
                 dates = self.get_dates_since_last_activity(ultimaAct)
-            print(f"Dates: {dates}")
+            
             try: 
                 # =========================================================
                 # if ultimaAct == "Nunca":           

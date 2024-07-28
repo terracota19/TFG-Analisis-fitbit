@@ -93,14 +93,13 @@ class Controller:
             if intensidad_min <= prediction_mean <= intensidad_max:
                 zona_landed_enum = zona
 
-        print(f"ZONAS {zonas}")
         if zona_landed_enum is not None:
 
             dif = (zona_landed_enum.value - zona_preferida.value)
             if  dif < 0:
-                texto = "Te estas quedando corto"
+                texto = "Te estas quedando corto "
             elif (dif > 0):
-                texto = "Te estas pasando"
+                texto = "Te estás pasando "
                 
             icon = IconsEnum.SAD
             if (not (zona_landed_enum == PreferenciaEnum.ZONA0 or zona_landed_enum == PreferenciaEnum.ZONA6)):
@@ -110,6 +109,8 @@ class Controller:
                     icon = IconsEnum.SAD2
                 else :
                     icon = IconsEnum.SAD
+            elif (dif > 1 ):
+                icon = IconsEnum.SAD2
             
             return texto, icon
             
@@ -443,14 +444,18 @@ class Controller:
             PreferenciaEnum.ZONA3 : (0.70, 0.79),
             PreferenciaEnum.ZONA4 : (0.81, 0.89),
             PreferenciaEnum.ZONA5 : (0.91, 1.00),
-            PreferenciaEnum.ZONA6 : (1.01, 2.00)
+            PreferenciaEnum.ZONA6 : (1.01, 4.00)
         }
         
         self.zonas = {}
         
         for zona, (intensidad_min, intensidad_max) in self.intensidades.items():
-            fc_min = ((FCM - FCReposo) * intensidad_min ) + FCReposo
-            fc_max = ((FCM - FCReposo) * intensidad_max ) + FCReposo
+            if zona == PreferenciaEnum.ZONA0:
+                fc_min = 0
+            else:
+                fc_min = ((FCM - FCReposo) * intensidad_min) + FCReposo
+
+            fc_max = ((FCM - FCReposo) * intensidad_max) + FCReposo
             self.zonas[zona] = (round(fc_min), round(fc_max))
 
         return self.zonas
