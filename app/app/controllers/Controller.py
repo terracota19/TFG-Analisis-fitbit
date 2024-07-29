@@ -37,12 +37,12 @@ class Controller:
         juan_fitbit_client_id = os.getenv("JUAN_FITBIT_CLIENT_ID")
         juan_fitbit_client_secret = os.getenv("JUAN_FITBIT_CLIENT_SECRET")
 
-        # javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
-        # javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
+        javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
+        javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
 
     
-        self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
-        # self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
+        #self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
+        self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
     
         """OAuthServer""" 
         self.oauth_server = OAuthServer(self.fitbitAPI)
@@ -78,14 +78,35 @@ class Controller:
     def validate_email(self, email):
         email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(email_regex, email)
-          
+
+    """
+        User selected data_title type of data
+    """    
     def userData(self, data_title, data_frec = None):
         return self.fitbitAPI.userData(data_title,data_frec)
     
+    """
+        User selected data_title type of data from [from_datetime, to_datetime] interval
+
+        Parameters:
+        -from_datetime (Datetime) : User selected begin datetime
+        -to_datetime (Datetime): User selected end datetime
+
+    """    
     def userDataByRange(self, data_title, from_datetime, to_datetime):
         return self.fitbitAPI.userDataByRange(data_title, from_datetime, to_datetime)
 
+    """
+        Checks in which HeartRate zone ML prediction_mean lands.
 
+        Paramaters:
+        -prediction_mean (int) : ML prediction mean
+        -zonas (Dictionary) : HeartRate zones
+        -zona_preferida (str) : User HeartRate selected zone.
+
+        Returns:
+        - (texto, icon) : text compound with icon image
+    """
     def checkWhereMeanLands(self, prediction_mean, zonas, zona_preferida):
         
         zona_landed_enum= None
@@ -97,7 +118,7 @@ class Controller:
 
             dif = (zona_landed_enum.value - zona_preferida.value)
             if  dif < 0:
-                texto = "Te estas quedando corto "
+                texto = "Te estás quedando corto "
             elif (dif > 0):
                 texto = "Te estás pasando "
                 
@@ -114,9 +135,7 @@ class Controller:
             
             return texto, icon
             
-           
         
-              
     """
         Logic for user secret password change.
 
@@ -135,7 +154,13 @@ class Controller:
         if user_id:
            self.mongo.changePass(hashed_new_pass, user_id, salt)
 
-    
+    """
+        Logic for user porpouse change.
+
+        Parameters:
+        -new_porpouse (str) : New user porpouse fitness goal.
+        
+    """
     def changeUserPorpouse(self, new_porpouse):
         user_id = self.logged_in_user.get("_id")
         if user_id :
@@ -435,7 +460,15 @@ class Controller:
 
         return user, email, password, edad
     
-    def calcular_zonas_fc(self, FCM, FCReposo):
+    """
+        Logic that calculates every HeartRate Zones using Karnoven formula.
+
+        Parameters:
+        -FCM (int) : User theoritical Maximun HeartRate
+        -FCReposo (int) : User theoretical resting HeartRate
+
+    """
+    def calcular_zonas_fc_karnoven(self, FCM, FCReposo):
 
         self.intensidades = {
             PreferenciaEnum.ZONA0 : (0.00, 0.49),
@@ -459,10 +492,18 @@ class Controller:
             self.zonas[zona] = (round(fc_min), round(fc_max))
 
         return self.zonas
+    """
+        Enum converter for zones
 
+        Parameters:
+        -preferencia (str): User fitness goal
+    """
     def getZonesEnum(self, preferencia):
         return self.zonasEnumDict.get(preferencia)
 
+    """
+        Logic for user porpouse, FCM, FCR
+    """
     def get_user_purpose_FCM_FCR(self):
          if self.logged_in_user:
             user_id = self.logged_in_user.get("_id")
@@ -486,6 +527,7 @@ class Controller:
     def register(self, user, email, password, edad, porpuse):
 
         """"User data"""
+        
         user, email, password, edad = self.sanatize(user, email, password, edad)
         hashed_password, salt = HashSHA_256.hash_password(password)
         access_token, refresh_token , expires_in, user_id = self.fitbitAPI.getTokens()
@@ -586,17 +628,9 @@ class Controller:
 
         if email and password is None:
             raise UserLogInError("Todos los campos de inicio de sesión son obligatorios (*).")
-        
-        if not self.validate_email(email):
-            raise UserLogInError("El formato del correo electrónico no es válido.")
-        
-        if not self.validate_string(password):
-            raise UserLogInError("La contraseña no es válida.")
-        
-      
+              
         email = self.sanitize_input(email)
         password = self.sanitize_input(password)
-        
         user_data = self.mongo.find_one_data("usuarios", query={"correo": email})
 
         if user_data is None:
@@ -619,7 +653,13 @@ class Controller:
         func = request.environ.get('werkzeug.server.shutdown')
         if func is not None:
             func()
-        
+
+    """
+        Store Resting HeartRate into MongoDB
+
+        Parameters:
+        -restingHeartRate (int) : User resting HeartRate
+    """
     def storeRestingHeartRate(self, restingHeartRate):
         user_id = self.logged_in_user.get("_id")
         if user_id:
