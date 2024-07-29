@@ -481,15 +481,15 @@ class Controller:
         }
         
         self.zonas = {}
-        
-        for zona, (intensidad_min, intensidad_max) in self.intensidades.items():
-            if zona == PreferenciaEnum.ZONA0:
-                fc_min = 0
-            else:
-                fc_min = ((FCM - FCReposo) * intensidad_min) + FCReposo
-
-            fc_max = ((FCM - FCReposo) * intensidad_max) + FCReposo
-            self.zonas[zona] = (round(fc_min), round(fc_max))
+        if FCM is not None and FCReposo is not None:
+            for zona, (intensidad_min, intensidad_max) in self.intensidades.items():
+                if zona == PreferenciaEnum.ZONA0:
+                    fc_min = 0
+                else:
+                    fc_min = ((FCM - FCReposo) * intensidad_min) + FCReposo
+    
+                fc_max = ((FCM - FCReposo) * intensidad_max) + FCReposo
+                self.zonas[zona] = (round(fc_min), round(fc_max))
 
         return self.zonas
     """
