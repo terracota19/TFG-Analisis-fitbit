@@ -63,5 +63,4 @@ class BaseForecaster :
     def forecast(self):
         
         self.predicciones = self.forecaster.predict(steps=self.steps, exog=self.future_exog)
-        print(self.predicciones)
         return np.maximum(self.predicciones, 0)
