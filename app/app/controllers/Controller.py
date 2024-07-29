@@ -51,6 +51,7 @@ class Controller:
         """HeartRate Zones"""
         self.zonas = {}
 
+        """HeartRate Zones Dictionary"""
         self.zonasEnumDict = {
              "Mejorar salud general" : PreferenciaEnum.ZONA1 ,
              "Quema de grasa" : PreferenciaEnum.ZONA2 ,
