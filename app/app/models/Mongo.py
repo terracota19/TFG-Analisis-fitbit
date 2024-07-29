@@ -7,14 +7,27 @@ class Mongo:
     """Close connection with MongoDB"""
     def close_connection(self):
         self.client.close()
-
+        
+    """
+        Getter of porpuse, FCM and FCR data from user logged.
+        
+        Parameters:
+        -query (str): Query to fetch user data.
+    """
     def get_user_porpuse_FCM_FCR(self, query):
         user = self.find_one_data("usuarios", query=query)
         if user:
             return user.get('proposito'), user.get('tanaka'), user.get('FCR')
         else:
             return None, None, None
-
+            
+    """
+        Stores into mongoDB the restingHeartRate value.
+        
+        Parameters:
+        -user_id (str) : User fitbit id.
+        -restingHeartRate (int) : User resting HeartRate from fitbit.
+    """
     def storeRestingHeartRate(self, user_id, restingHeartRate):
         return self.update_data("usuarios", query={"_id": user_id},field="restingHeartRate", value = restingHeartRate)
 
