@@ -61,7 +61,16 @@ class FitBitDataHandler :
         
         else:
             raise ValueError(f"Unsupported data_frec value: {data_frec}")
-    
+    """
+        Parameters:
+        -data_title (str) : Selected type of data to be plotted.
+        -user_id (str) : User fitbit id.
+        -from_datetime (Datetime) : Begin date.
+        -to_datetime (Datetime) : End date.
+        
+        Returns:
+        - csv : CSV that contains selected data_title type of data begining in from_datetime and ennding in to_datetime
+    """
     def userDataByRange(self, data_title, user_id, from_datetime, to_datetime):
 
         if data_title not in self.variables:
