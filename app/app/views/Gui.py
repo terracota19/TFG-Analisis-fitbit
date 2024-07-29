@@ -56,9 +56,6 @@ class App(tk.Tk):
         self.to_minute_spinbox = None
         self.purposeComboBox = None
 
-        """Mutex"""
-        self.mutex = threading.Lock()
-
         """Calendar"""
         self.from_date = None
         self.to_date = None
@@ -68,18 +65,6 @@ class App(tk.Tk):
         self.to_minute_var = tk.StringVar(value="59")
         self.to_datetime = None
         self.from_date = None
-
-        """Icons"""
-        self.menu_icon = None
-        self.x_icon = None
-        self.prediction_x_icon = None
-        self.home_icon = None
-        self.prediction_home_icon = None
-        self.conf_icon = None
-        self.settings_x_icon = None
-        self.register_x_icon = None
-        self.smiley_icon = None
-        self.sad_icon = None
 
         """Frames"""
         self.register_frame = None
@@ -95,13 +80,11 @@ class App(tk.Tk):
         self.prediction_comboBox_frame = None
         self.prediction_graph_frame = None
 
-        self.diasMes = calendar.monthrange(datetime.now().year, datetime.now().month)[1]
-    
         """TimeDeltas"""
         self.time_deltas = {
                             "1 día": pd.Timedelta(days=1),
                             "1 semana": pd.Timedelta(weeks=1),
-                            "1 mes": pd.Timedelta(days=self.diasMes),
+                            "1 mes": pd.Timedelta(days= calendar.monthrange(datetime.now().year, datetime.now().month)[1]),
                             "1 hora": pd.Timedelta(hours=1),
                             "1 min": pd.Timedelta(minutes=1)
                            }
@@ -151,6 +134,7 @@ class App(tk.Tk):
         tk.Label(frame, text=text, pady=2, fg="white", bg="#626CC2", font=('Segoe UI', 14)).pack(anchor='w', padx=20, pady=(10, 0))
         entry = tk.Entry(frame, show="*" if show else "")
         entry.pack(fill=tk.X, padx=20, pady=5)
+        
         if event and function:
             func_ref = getattr(self, function)
             entry.bind(event, func_ref)
@@ -158,8 +142,7 @@ class App(tk.Tk):
         setattr(self, attr_name, entry)
         return entry
 
-   
-        
+           
     """
         Creates register link on 'frame' = frame
 
@@ -301,16 +284,9 @@ class App(tk.Tk):
         self.notebook.add(self.app_frame, text="HeartPred'it")
 
         self.header_frame = tk.Frame(self.app_frame, bg="#626CC2")
-    
-        self.conf_icon = Image.open('app/assets/images/conf.png')
-        self.conf_icon = self.conf_icon.resize((30, 30), Image.LANCZOS)  
-        self.conf_icon = ImageTk.PhotoImage(self.conf_icon)
-
-        self.conf_button = tk.Button(self.header_frame, image=self.conf_icon, bg="#626CC2", relief=tk.FLAT, command=self.settings)
-        self.conf_button.image = self.conf_button 
-        self.conf_button.pack(side=tk.RIGHT)
-
+        self.create_image_button(self.header_frame, image_path='app/assets/images/conf.png', size=(30,30), command = self.settings, side=tk.RIGHT)
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
+        
         self.menu_frame = tk.Frame(self.app_frame, bg="#626CC2")
       
         try:
@@ -348,29 +324,18 @@ class App(tk.Tk):
 
         self.header_frame = tk.Frame(self.settings_frame, bg="#626CC2")
        
-        #icons
-        self.settings_x_icon = Image.open('app/assets/images/x.png')
-        self.settings_x_icon = self.settings_x_icon.resize((30, 30), Image.LANCZOS)  
-        self.settings_x_icon = ImageTk.PhotoImage(self.settings_x_icon)
-
-        self.settings_x_button = tk.Button(self.header_frame, image=self.settings_x_icon, bg="#626CC2", relief=tk.FLAT, command=self.close_settings_tab)
-        self.settings_x_button.image = self.settings_x_button 
-        self.settings_x_button.pack(side=tk.RIGHT)
+        self.create_image_button(self.header_frame, image_path='app/assets/images/x.png', size=(30,30), command=self.close_settings_tab, side= tk.RIGHT)
 
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
         self.menu_frame = tk.Frame(self.settings_frame, bg="#626CC2")
 
         "Icon"
-        self.herramienta_icon = Image.open('app/assets/images/herramienta.png')
-        self.herramienta_icon = self.herramienta_icon.resize((30, 30), Image.LANCZOS)  
-        self.herramienta_icon = ImageTk.PhotoImage(self.herramienta_icon)
-
-       
-        self.general = tk.Label(self.settings_frame, text="Ajustes General:", font=("Segoe UI", 28), fg="white", bg="#626CC2", image=self.herramienta_icon, compound="right")
+        self.herramienta_icon = self.readImage('app/assets/images/herramienta.png')
+    
+        self.general = tk.Label(self.settings_frame, text="Ajustes General:", font=("Segoe UI", 28), fg="white", bg="#626CC2", image = self.herramienta_icon, compound="right")
         self.general.image = self.saludo_icon  
         self.general.pack()
     
-
         change_user_name_link = tk.Label(self.settings_frame, text="Cambiar nombre de usuario:", fg="white", bg="#626CC2", cursor="hand2", font=('Segoe UI', 12))
         change_user_name_link.pack(pady=5)
         change_user_name_link.bind("<Button-1>", lambda e: self.changeUserName())
@@ -457,7 +422,10 @@ class App(tk.Tk):
           
         self.change_porpouse_frame = tk.Frame(self.settings_frame, bg="#626CC2")
     
-        self.purposeComboBox = ttk.Combobox(self.change_porpouse_frame, width=40,values=["Ninguno", "Mejorar salud general", "Quema de grasa", "Mejorar resistencia cardiovascular", "Mejorar la velocidad y potencia", "Mejorar máximo rendimiento"])
+        self.purposeComboBox = ttk.Combobox(self.change_porpouse_frame, width=40,
+            values=["Ninguno", "Mejorar salud general", "Quema de grasa", "Mejorar resistencia cardiovascular",
+                     "Mejorar la velocidad y potencia", "Mejorar máximo rendimiento"])
+        
         self.purposeComboBox.pack(padx=20)
         self.purposeComboBox.set("Ninguno")
 
@@ -546,7 +514,21 @@ class App(tk.Tk):
         self.register_frame = None
         self.app_frame = None
         self.dataUser_frame = None
+    
+    """
+        Logic for image read.
 
+        Parameters:
+        -image_path (str): Path to the image.
+        -size (pair): (X,Y) image size.
+
+    """
+    def readImage(self, image_path, size = (30,30)):
+        icon = Image.open(image_path)
+        icon = icon.resize(size, Image.LANCZOS)  
+        icon = ImageTk.PhotoImage(icon)
+        return icon
+    
     """
         Creates Welcome label into 'frame' = frame
 
@@ -554,14 +536,11 @@ class App(tk.Tk):
         -frame (Tkinter Frame) : super.tk.Frame.
     """
     def create_welcome_label(self, frame):
-        "Icon"
-        self.saludo_icon = Image.open('app/assets/images/saludo.png')
-        self.saludo_icon = self.saludo_icon.resize((30, 30), Image.LANCZOS)  
-        self.saludo_icon = ImageTk.PhotoImage(self.saludo_icon)
-
+        self.saludo_icon = self.readImage('app/assets/images/saludo.png')
         user_info = self.controller.user_info()
         if user_info:
-            self.welcome_label = tk.Label(frame, text=f"¡Bienvenido, {user_info}!", font=("Segoe UI", 20), fg="white", bg="#626CC2", image=self.saludo_icon, compound="right")
+            self.welcome_label = tk.Label(frame, text=f"¡Bienvenido, {user_info}!", font=("Segoe UI", 20), fg="white", bg="#626CC2", 
+                                          image = self.saludo_icon, compound="right")
             self.welcome_label.image = self.saludo_icon  
             self.welcome_label.pack()
             self.create_status_frame(frame)
@@ -595,10 +574,8 @@ class App(tk.Tk):
     def createLastUpdateLabel(self, frame, last_update):
 
         "Icon"
-        self.band_icon = Image.open('app/assets/images/band.png')
-        self.band_icon = self.band_icon.resize((30, 30), Image.LANCZOS)  
-        self.band_icon = ImageTk.PhotoImage(self.band_icon)
-
+        self.band_icon = self.readImage('app/assets/images/band.png')
+       
         if last_update != "Nunca":
             text = f"Última Sincronización con la pulsera: {last_update}"
         else:
@@ -620,13 +597,7 @@ class App(tk.Tk):
 
         self.header_frame = tk.Frame(self.register_frame, bg="#626CC2")
     
-        self.register_x_icon = Image.open('app/assets/images/x.png')
-        self.register_x_icon = self.register_x_icon.resize((30, 30), Image.LANCZOS)  
-        self.register_x_icon = ImageTk.PhotoImage(self.register_x_icon)
-
-        self.register_x_button = tk.Button(self.header_frame, image=self.register_x_icon, bg="#626CC2", relief=tk.FLAT, command=self.close_register_tab)
-        self.register_x_button.image = self.register_x_button 
-        self.register_x_button.pack(side=tk.RIGHT)
+        self.create_image_button(self.header_frame, image_path='app/assets/images/x.png', size=(30,30), command=self.close_register_tab, side= tk.RIGHT)
 
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
 
@@ -647,13 +618,9 @@ class App(tk.Tk):
             self.purposeComboBox.pack(padx=20)
         
             # Icon
-            self.link_icon = Image.open('app/assets/images/link.png')
-            self.link_icon = self.link_icon.resize((15, 15), Image.LANCZOS)  
-            self.link_icon = ImageTk.PhotoImage(self.link_icon)
-
-
+            self.link_icon = self.readImage('app/assets/images/link.png', size = (15, 15))
             self.link_label = tk.Label(self.register_frame, text="Registrarse y autorizar con Fitbit", font=("Segoe UI", 14),
-                                         fg = "white", bg="#626CC2",  image=self.link_icon, compound="right", cursor="hand2")
+                                         fg = "white", bg="#626CC2", image = self.link_icon, compound="right", cursor="hand2")
             self.link_label.image = self.link_icon
             self.link_label.pack(pady = 11)
             self.link_label.bind("<KeyPress-Return>", lambda e: self.on_register_submit() )
@@ -702,14 +669,7 @@ class App(tk.Tk):
 
         self.header_frame = tk.Frame(self.prediction_frame, bg="#626CC2")
 
-        self.x_icon = Image.open('app/assets/images/x.png')
-        self.x_icon = self.x_icon.resize((30, 30), Image.LANCZOS)  
-        self.x_icon = ImageTk.PhotoImage(self.x_icon)
-
-        self.x_button = tk.Button(self.header_frame, image=self.x_icon, bg="#626CC2", relief=tk.FLAT, command=self.close_prediction_tab)
-        self.x_button.image = self.x_icon 
-        self.x_button.pack(side=tk.RIGHT)
-
+        self.create_image_button(self.header_frame, image_path='app/assets/images/x.png', size=(30,30), command=self.close_prediction_tab, side= tk.RIGHT)
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
 
         self.prediction_comboBox_frame = tk.Frame(self.prediction_frame, bg="#626CC2")
@@ -772,6 +732,7 @@ class App(tk.Tk):
 
     """Logic for prediction frame creation"""
     def selectUserData(self):
+
         if self.dataUser_frame:
             self.close_user_data_tab()
 
@@ -780,15 +741,7 @@ class App(tk.Tk):
         self.notebook.select(self.dataUser_frame)
 
         self.header_frame = tk.Frame(self.dataUser_frame, bg="#626CC2")
-
-        self.x_icon = Image.open('app/assets/images/x.png')
-        self.x_icon = self.x_icon.resize((30, 30), Image.LANCZOS)  
-        self.x_icon = ImageTk.PhotoImage(self.x_icon)
-
-        self.x_button = tk.Button(self.header_frame, image=self.x_icon, bg="#626CC2", relief=tk.FLAT, command=self.close_user_data_tab)
-        self.x_button.image = self.x_icon 
-        self.x_button.pack(side=tk.RIGHT)
-
+        self.create_image_button(self.header_frame, image_path='app/assets/images/x.png', size=(30,30), command=self.close_user_data_tab, side= tk.RIGHT)
         self.header_frame.pack(side=tk.TOP, fill=tk.X)
 
         tk.Label(self.dataUser_frame, text="Selecciona qué datos quieres visualizar", font=("Segoe UI", 14), fg="white", bg="#626CC2").pack(pady=10)
@@ -815,19 +768,24 @@ class App(tk.Tk):
         show_user_data_link = tk.Label(self.mostrar_frame, text="Mostrar", fg="white", bg="#626CC2", cursor="hand2", font=('Segoe UI', 12))
         show_user_data_link.pack(side=tk.LEFT, pady=5)
         show_user_data_link.bind("<Button-1>", lambda e: self.graphUserData())
-        
-        self.filter_icon = Image.open('app/assets/images/filter.png')
-        self.filter_icon = self.filter_icon.resize((30, 30), Image.LANCZOS)
-        self.filter_icon = ImageTk.PhotoImage(self.filter_icon)
-
-        self.filter_button = tk.Button(self.mostrar_frame, image=self.filter_icon, bg="#626CC2", relief=tk.FLAT, command=self.showFilterOptions)
-        self.filter_button.image = self.filter_icon
-        self.filter_button.pack(side=tk.LEFT)
+      
+        self.create_image_button(self.mostrar_frame, 'app/assets/images/filter.png', (30, 30), "#626CC2", self.showFilterOptions)
 
         self.mostrar_frame.pack()
 
         self.userData_graph_frame = tk.Frame(self.dataUser_frame, bg="#626CC2", padx=20, pady=20)
         self.userData_graph_frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+
+    def create_image_button(self, parent_frame, image_path, size=(30, 30), bg_color="#626CC2", command=None, relief=tk.FLAT, side=tk.LEFT):
+        icon = Image.open(image_path)
+        icon = icon.resize(size, Image.LANCZOS)
+        icon = ImageTk.PhotoImage(icon)
+
+        button = tk.Button(parent_frame, image=icon, bg=bg_color, relief=relief, command=command)
+        button.image = icon
+        button.pack(side=side)
+        return button
 
     """
         Logic for showing Filter options
@@ -1037,7 +995,7 @@ class App(tk.Tk):
 
         ax.plot(data.index, data[data_title], label=data_title, linestyle='-', color='c', linewidth=0.8)
         
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m %H:%M'))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
         fig.autofmt_xdate()  
 
         ax.set_xlabel('Tiempo')
@@ -1225,11 +1183,9 @@ class App(tk.Tk):
         if preferencia == "Ninguno" :
             return "Ninguno", None
         
-        zonas = self.controller.calcular_zonas_fc(FCM_value, FCR_value) 
-        
+        zonas = self.controller.calcular_zonas_fc_karnoven(FCM_value, FCR_value) 
         zonas_prefererida_enum = self.controller.getZonesEnum(preferencia)
         zona_preferida_fc_min, zona_preferida_fc_max = zonas.get(zonas_prefererida_enum)
-    
         prediction_mean = statistics.mean(predictions)
 
         if (zona_preferida_fc_min <= prediction_mean <= zona_preferida_fc_max):
