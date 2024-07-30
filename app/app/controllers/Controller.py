@@ -33,10 +33,8 @@ class Controller:
     
         """API Fitbit"""
         load_dotenv()
-
         juan_fitbit_client_id = os.getenv("JUAN_FITBIT_CLIENT_ID")
         juan_fitbit_client_secret = os.getenv("JUAN_FITBIT_CLIENT_SECRET")
-
         self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
     
         """OAuthServer""" 
