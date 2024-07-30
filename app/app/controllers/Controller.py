@@ -476,8 +476,8 @@ class Controller:
             PreferenciaEnum.ZONA1 : (0.50, 0.59),
             PreferenciaEnum.ZONA2 : (0.60, 0.69),
             PreferenciaEnum.ZONA3 : (0.70, 0.79),
-            PreferenciaEnum.ZONA4 : (0.81, 0.89),
-            PreferenciaEnum.ZONA5 : (0.91, 1.00),
+            PreferenciaEnum.ZONA4 : (0.80, 0.89),
+            PreferenciaEnum.ZONA5 : (0.90, 1.00),
             PreferenciaEnum.ZONA6 : (1.01, 4.00)
         }
         
