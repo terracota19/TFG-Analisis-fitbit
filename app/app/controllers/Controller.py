@@ -33,9 +33,16 @@ class Controller:
     
         """API Fitbit"""
         load_dotenv()
+
         juan_fitbit_client_id = os.getenv("JUAN_FITBIT_CLIENT_ID")
         juan_fitbit_client_secret = os.getenv("JUAN_FITBIT_CLIENT_SECRET")
-        self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
+
+        javi_fitbit_client_id = os.getenv("JAVI_FITBIT_CLIENT_ID")
+        javi_fitbit_client_secret = os.getenv("JAVI_FITBIT_CLIENT_SECRET")
+
+    
+        #self.fitbitAPI = FitbitAPI(juan_fitbit_client_id, juan_fitbit_client_secret, self.mongo)
+        self.fitbitAPI = FitbitAPI(javi_fitbit_client_id, javi_fitbit_client_secret, self.mongo)
     
         """OAuthServer""" 
         self.oauth_server = OAuthServer(self.fitbitAPI)
@@ -101,20 +108,22 @@ class Controller:
         Returns:
         - (texto, icon) : text compound with icon image
     """
-    def checkWhereMeanLands(self, prediction_mean, zonas, zona_preferida):
+    def checkWhereMeanLands(self, prediction_mean, zonas, zona_preferida, preferencia, fc_preferida_min, fc_preferida_max):
         
         zona_landed_enum= None
+       
+
         for zona, (intensidad_min, intensidad_max) in zonas.items():
             if intensidad_min <= prediction_mean <= intensidad_max:
                 zona_landed_enum = zona
-
+                 
         if zona_landed_enum is not None:
 
             dif = (zona_landed_enum.value - zona_preferida.value)
             if  dif < 0:
-                texto = "Te estás quedando corto "
+                texto = "Te estás quedando corto"
             elif (dif > 0):
-                texto = "Te estás pasando "
+                texto = "Te estás pasando"
                 
             icon = IconsEnum.SAD
             if (not (zona_landed_enum == PreferenciaEnum.ZONA0 or zona_landed_enum == PreferenciaEnum.ZONA6)):
@@ -127,7 +136,7 @@ class Controller:
             elif (dif > 1 ):
                 icon = IconsEnum.SAD2
             
-            return texto, icon
+            return texto, icon,  fc_preferida_min, fc_preferida_max, preferencia
             
         
     """
@@ -470,7 +479,7 @@ class Controller:
             PreferenciaEnum.ZONA2 : (0.60, 0.69),
             PreferenciaEnum.ZONA3 : (0.70, 0.79),
             PreferenciaEnum.ZONA4 : (0.80, 0.89),
-            PreferenciaEnum.ZONA5 : (0.90, 1.00),
+            PreferenciaEnum.ZONA5 : (0.91, 1.00),
             PreferenciaEnum.ZONA6 : (1.01, 4.00)
         }
         
@@ -486,6 +495,7 @@ class Controller:
                 self.zonas[zona] = (round(fc_min), round(fc_max))
 
         return self.zonas
+    
     """
         Enum converter for zones
 
