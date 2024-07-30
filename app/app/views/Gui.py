@@ -1153,7 +1153,7 @@ class App(tk.Tk):
         if self.data_pred_title == "HeartRate" :
             texto, icon, fc_min, fc_max, preferencia = self.insidePreferedHeartRateZone(predictions)
 
-        if (texto is not None) and (texto != "Ninguno" and self.data_pred_title == "HeartRate"):
+        if (texto is not None) and self.data_pred_title == "HeartRate":
             
             self.any_icon = self.readImage(f'app/assets/images/{icon.value}')
 
@@ -1187,7 +1187,7 @@ class App(tk.Tk):
         preferencia, FCM_value, FCR_value =  self.controller.get_user_purpose_FCM_FCR()
              
         if preferencia == "Ninguno" :
-            return "Ninguno", None
+            return None , None, None, None, None
         
         zonas = self.controller.calcular_zonas_fc_karnoven(FCM_value, FCR_value) 
         zonas_prefererida_enum = self.controller.getZonesEnum(preferencia)
