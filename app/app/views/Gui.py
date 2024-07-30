@@ -1151,16 +1151,22 @@ class App(tk.Tk):
         texto = None
         icon = None
         if self.data_pred_title == "HeartRate" :
-            texto, icon = self.insidePreferedHeartRateZone(predictions)
+            texto, icon, fc_min, fc_max, preferencia = self.insidePreferedHeartRateZone(predictions)
 
         if (texto is not None) and (texto != "Ninguno" and self.data_pred_title == "HeartRate"):
             
-            self.any_icon = Image.open(f'app/assets/images/{icon.value}')
-            self.any_icon= self.any_icon.resize((30, 30), Image.LANCZOS)  
-            self.any_icon = ImageTk.PhotoImage(self.any_icon)
+            self.any_icon = self.readImage(f'app/assets/images/{icon.value}')
 
-            self.range_label = tk.Label(self.predict_range_graph_frame, text=f" {texto}", fg="white", bg="#626CC2", font=("Segoe UI", 14), image = self.any_icon, compound = "right")
-            self.range_label.pack(side=tk.RIGHT, pady=5)
+            self.range_label = tk.Label(self.predict_range_graph_frame, text=f"{texto}", fg="white", bg="#626CC2", font=("Segoe UI", 11))
+            self.range_label.pack(side=tk.LEFT, pady=5)
+           
+
+            self.porpuse_info_label = tk.Label(self.predict_range_graph_frame, 
+                                               text=f", propósito elegido '{preferencia}' : [{fc_min}, {fc_max-1}) lpm ", fg="white", bg="#626CC2", 
+                                               font=("Segoe UI", 11), image = self.any_icon, compound = "right")
+            
+            self.porpuse_info_label.pack(side=tk.LEFT, pady=5)
+
             self.predict_range_graph_frame.pack()
       
         canvas = FigureCanvasTkAgg(fig, master=self.prediction_graph_frame)
@@ -1189,10 +1195,10 @@ class App(tk.Tk):
         prediction_mean = statistics.mean(predictions)
 
         if (zona_preferida_fc_min <= prediction_mean <= zona_preferida_fc_max):
-                return "¡Sigue así! ", IconsEnum.HAPPY
+                return "¡Sigue así! ", IconsEnum.HAPPY, zona_preferida_fc_max, zona_preferida_fc_max, preferencia
         else :
-            return self.checkWhereMeanLands(prediction_mean, zonas, zonas_prefererida_enum)
-        
+            return self.checkWhereMeanLands(prediction_mean, zonas, zonas_prefererida_enum, preferencia, zona_preferida_fc_min, zona_preferida_fc_max)
+         
     """
         Logic that returns in which zone predicted_mean lands
 
@@ -1201,8 +1207,8 @@ class App(tk.Tk):
         -zones (dictionary) : Dictionary that contains every zone
         
     """
-    def checkWhereMeanLands(self, prediction_mean, zones, zona_preferida):
-        return self.controller.checkWhereMeanLands(prediction_mean, zones, zona_preferida)
+    def checkWhereMeanLands(self, prediction_mean, zones, zona_preferida, preferencia, fc_preferida_min, fc_preferida_max):
+        return self.controller.checkWhereMeanLands(prediction_mean, zones, zona_preferida, preferencia, fc_preferida_min, fc_preferida_max)
 
     """Logic for updating/syncronized with latest user data"""
     def update_status(self):
