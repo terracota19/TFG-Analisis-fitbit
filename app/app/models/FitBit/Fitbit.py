@@ -30,7 +30,7 @@ class FitbitAPI:
         self.authentification_url = self.generate_authorization_url()
 
         """
-            Mejores resultados del estudio de minimización del error mse para cada step posible con los modelos ["LightGBM", "XGBoost", "MLP"]
+            Mejores resultados del estudio de minimización del error mse para cada step posible con los modelos ["LightGBM", "XGBoost"]
         """
         self.bestModelAndLagsForSteps = {               
                                 5: ("XGBoost", 7),
