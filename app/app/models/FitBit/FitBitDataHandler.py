@@ -353,16 +353,24 @@ class FitBitDataHandler :
 
         
     def getRestingHeartRate(self, access_token, user_id):
-      
-        base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/today/1d/1min.json"
+        base_url = f"https://api.fitbit.com/1/user/{user_id}/activities/heart/date/today/30d.json"
 
         headers = {'Authorization': f'Bearer {access_token}'}
         response = requests.get(base_url, headers=headers)
-        
+
         if response.status_code == 200:
-            return response.json()['activities-heart'][0]['value'].get('restingHeartRate')
+            heart_data = response.json()['activities-heart']
+            
+            resting_heart_rates = [day['value'].get('restingHeartRate') for day in heart_data if 'restingHeartRate' in day['value']]
+
+            if resting_heart_rates:
+                avg_resting_heart_rate = sum(resting_heart_rates) / len(resting_heart_rates)
+                return avg_resting_heart_rate
+            else:
+                print("No se encontraron datos de restingHeartRate en los últimos 30 días.")
+                return None
         else:
-            print(f"Error obteniendo restingHeartRate para today : {response.status_code}")
+            print(f"Error obteniendo restingHeartRate para los últimos 30 días: {response.status_code}")
             print(response.text)
             return None
     
