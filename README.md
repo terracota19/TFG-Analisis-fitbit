@@ -78,10 +78,4 @@ Existen dos formas de ejecutar la aplicación: automática y manual. A continuac
 
 ---
 
-## **Soporte**
-
-Si tienes alguna duda o necesitas asistencia durante la instalación o ejecución, no dudes en ponerte en contacto con nuestro equipo de soporte a través de [correo electrónico](mailto:support@heartpredit.com).
-
----
-
 ¡Listo! Con estos pasos, deberías poder ejecutar **HeartPred'it** correctamente en tu sistema. Disfruta de la aplicación y comienza a predecir el bienestar de tu corazón.
