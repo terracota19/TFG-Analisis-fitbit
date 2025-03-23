@@ -78,4 +78,3 @@ Existen dos formas de ejecutar la aplicación: automática y manual. A continuac
 
 ---
 
-¡Listo! Con estos pasos, deberías poder ejecutar **HeartPred'it** correctamente en tu sistema. Disfruta de la aplicación y comienza a predecir el bienestar de tu corazón.
