@@ -13,6 +13,17 @@ Bienvenido a la guía de instalación de la aplicación **HeartPred'it**. A cont
 
 ---
 
+## **¿Qué es HeartPred'it?**
+
+Una aplicación que emplea Machine Learning y datos de Fitbit para predecir métricas como ritmo cardíaco, calorías y pasos. La herramienta genera estadísticas, gráficos y recomendaciones personalizadas para mejorar el rendimiento deportivo.
+
+---
+
+## **What is HeartPred'it?**
+
+An application using Machine Learning and Fitbit data to predict metrics such as heart rate, calories, and steps. The tool generates statistics, charts, and personalized recommendations to enhance athletic performance.
+
+
 ## **Requisitos Previos**
 
 Antes de ejecutar la aplicación, asegúrate de tener instalados los siguientes componentes:
